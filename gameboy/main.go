@@ -25,6 +25,13 @@ func Start(romPath string) error {
 
 	log.Printf("Starting game... (%s)\n", rom.Title())
 
+	for {
+		_, err := cpu.Tick()
+		if err != nil {
+			return err
+		}
+	}
+
 	w.Resize(fyne.NewSize(160, 144))
 	w.ShowAndRun()
 

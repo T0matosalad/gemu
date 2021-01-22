@@ -9,7 +9,9 @@ type Bus struct {
 }
 
 func New() Bus {
-	return Bus{}
+	return Bus{
+		addressSpace: map[AddressRange]Addressable{},
+	}
 }
 
 func (b *Bus) Map(targetRange AddressRange, device Addressable) error {

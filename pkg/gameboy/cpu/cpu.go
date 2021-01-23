@@ -7,6 +7,8 @@ import (
 	"github.com/d2verb/gemu/pkg/log"
 )
 
+const Hz = 4194304
+
 type CPU struct {
 	regs           Registers
 	ime            bool

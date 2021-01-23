@@ -1,6 +1,8 @@
 package gameboy
 
 import (
+	"time"
+
 	"fyne.io/fyne"
 	"fyne.io/fyne/app"
 
@@ -16,26 +18,41 @@ func Start(romPath string) error {
 	w := a.NewWindow("Gemu")
 	// c := w.Canvas()
 
-	cpu := cpu.New()
-	rom := rom.New(romPath)
-	ppu := ppu.New()
-	bus := bus.New()
+	c := cpu.New()
+	r := rom.New(romPath)
+	p := ppu.New()
+	b := bus.New()
 
-	cpu.ConnectToBus(&bus)
-	rom.ConnectToBus(&bus)
-	ppu.ConnectToBus(&bus)
+	c.ConnectToBus(&b)
+	r.ConnectToBus(&b)
+	p.ConnectToBus(&b)
 
-	log.Debugf("Starting game... (%s)\n", rom.Title())
+	log.Debugf("Starting game... (%s)\n", r.Title())
+
+	startTime := Now()
+	accumulatedCycles := 0
 
 	for {
-		cycles, err := cpu.Step()
+		cycles, err := c.Step()
 		if err != nil {
 			return err
 		}
 
-		err = ppu.Step(cycles)
+		err = p.Step(cycles)
 		if err != nil {
 			return err
+		}
+
+		// Ensure that the CPU only runs cpu.Hz cycles per second
+		accumulatedCycles += cycles
+		if accumulatedCycles >= cpu.Hz {
+			elapsedTime := Now() - startTime
+			if elapsedTime < 1000 {
+				duration := time.Duration(1000 - elapsedTime)
+				time.Sleep(duration * time.Millisecond)
+			}
+			accumulatedCycles -= cpu.Hz
+			startTime = Now()
 		}
 	}
 
@@ -43,4 +60,8 @@ func Start(romPath string) error {
 	w.ShowAndRun()
 
 	return nil
+}
+
+func Now() int64 {
+	return time.Now().Unix()*1000 + time.Now().UnixNano()/int64(time.Millisecond)
 }

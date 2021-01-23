@@ -23,6 +23,7 @@ gemu [-v] ROM
 - [The Ultimate Game Boy Talk (33c3)](https://youtu.be/HyzD8pNlpwI)
 - [GB DEV](https://gbdev.io/)
 - [Game Boy CPU (SM83) instruction set](https://gbdev.io/gb-opcodes/optables/)
+- [Game boy Architecture](https://www.copetti.org/writings/consoles/game-boy/)
 
 # ROMs
 - [Tobu Tobu Girl](https://tangramgames.dk/tobutobugirl/)

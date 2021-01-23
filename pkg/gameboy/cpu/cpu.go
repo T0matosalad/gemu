@@ -9,6 +9,7 @@ import (
 
 type CPU struct {
 	regs           Registers
+	ime            bool
 	bus            *bus.Bus
 	instructionSet map[uint16]instruction
 }

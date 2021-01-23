@@ -1,14 +1,13 @@
 package gameboy
 
 import (
-	"log"
-
 	"fyne.io/fyne"
 	"fyne.io/fyne/app"
 
-	"github.com/d2verb/gemu/gameboy/bus"
-	"github.com/d2verb/gemu/gameboy/cpu"
-	"github.com/d2verb/gemu/gameboy/rom"
+	"github.com/d2verb/gemu/pkg/gameboy/bus"
+	"github.com/d2verb/gemu/pkg/gameboy/cpu"
+	"github.com/d2verb/gemu/pkg/gameboy/rom"
+	"github.com/d2verb/gemu/pkg/log"
 )
 
 func Start(romPath string) error {
@@ -23,7 +22,7 @@ func Start(romPath string) error {
 	cpu.ConnectToBus(&bus)
 	rom.ConnectToBus(&bus)
 
-	log.Printf("Starting game... (%s)\n", rom.Title())
+	log.Debugf("Starting game... (%s)\n", rom.Title())
 
 	for {
 		_, err := cpu.Tick()

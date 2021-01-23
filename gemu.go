@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/d2verb/gemu/gameboy"
+	"github.com/d2verb/gemu/pkg/gameboy"
+	"github.com/d2verb/gemu/pkg/log"
 )
 
 const version = "0.0.1"
@@ -24,6 +25,8 @@ func Run() error {
 	if len(flag.Args()) != 1 {
 		return flag.ErrHelp
 	}
+
+	log.SetMode(log.DebugMode)
 
 	return gameboy.Start(flag.Arg(0))
 }

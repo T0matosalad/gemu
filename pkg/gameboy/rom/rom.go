@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 
-	"github.com/d2verb/gemu/gameboy/bus"
+	"github.com/d2verb/gemu/pkg/gameboy/bus"
 )
 
 type ROM struct {

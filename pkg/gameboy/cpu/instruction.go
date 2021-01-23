@@ -27,7 +27,7 @@ func newInstructionSet() map[uint16]instruction {
 				return 8, nil
 			}
 
-			cpu.regs.PC += signExtFromU8ToU16(data)
+			cpu.regs.PC += signExtU8ToU16(data)
 			return 12, nil
 		}),
 		0x31: newInstruction("ld SP, d16", func(cpu *CPU) (int, error) {
@@ -114,7 +114,7 @@ func (c *CPU) subtractByte(a uint8, b uint8) uint8 {
 }
 
 // Example: 0b1111_1010 to 0b1111_1111_1111_1010
-func signExtFromU8ToU16(from uint8) uint16 {
+func signExtU8ToU16(from uint8) uint16 {
 	to := (uint16)(from)
 	if (from & 0b10000000) != 0 {
 		to |= 0xff00

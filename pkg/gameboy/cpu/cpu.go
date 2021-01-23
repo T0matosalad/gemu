@@ -11,7 +11,9 @@ const Hz = 4194304
 
 type CPU struct {
 	regs           Registers
-	ime            bool
+	ime            bool  // Interrupt Master Enable Flag
+	ie             uint8 // Interrupt Enable
+	_if            uint8 // Interrupt Flag
 	bus            *bus.Bus
 	instructionSet map[uint16]instruction
 }
@@ -23,8 +25,14 @@ func New() CPU {
 	}
 }
 
-func (c *CPU) ConnectToBus(bus *bus.Bus) error {
-	c.bus = bus
+func (c *CPU) ConnectToBus(b *bus.Bus) error {
+	if err := b.Map(bus.NewAddressRange(0xff0f, 0xff0f), c); err != nil {
+		return err
+	}
+	if err := b.Map(bus.NewAddressRange(0xffff, 0xffff), c); err != nil {
+		return err
+	}
+	c.bus = b
 	return nil
 }
 
@@ -56,4 +64,36 @@ func (c *CPU) fetch() (uint16, error) {
 	}
 	c.regs.PC++
 	return (uint16)(opcode), nil
+}
+
+func (c *CPU) ReadByte(address uint16) (uint8, error) {
+	switch address {
+	case 0xff0f:
+		return c._if, nil
+	case 0xffff:
+		return c.ie, nil
+	default:
+		return 0, fmt.Errorf("CPU cannot be accessed at 0x%04x", address)
+	}
+}
+
+func (c *CPU) WriteByte(address uint16, data uint8) error {
+	switch address {
+	case 0xff0f:
+		c._if = data
+		return nil
+	case 0xffff:
+		c.ie = data
+		return nil
+	default:
+		return fmt.Errorf("CPU cannot be accessed at 0x%04x", address)
+	}
+}
+
+func (c *CPU) ReadWord(address uint16) (uint16, error) {
+	return 0, fmt.Errorf("CPU cannot be accessed at 0x%04x", address+1)
+}
+
+func (c *CPU) WriteWord(address uint16, data uint16) error {
+	return fmt.Errorf("CPU cannot be accessed at 0x%04x", address+1)
 }

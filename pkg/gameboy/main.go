@@ -28,7 +28,7 @@ func Start(romPath string) error {
 	log.Debugf("Starting game... (%s)\n", rom.Title())
 
 	for {
-		_, err := cpu.Tick()
+		_, err := cpu.Step()
 		if err != nil {
 			return err
 		}

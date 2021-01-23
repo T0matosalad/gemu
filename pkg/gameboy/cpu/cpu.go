@@ -26,7 +26,7 @@ func (c *CPU) ConnectToBus(bus *bus.Bus) error {
 	return nil
 }
 
-func (c *CPU) Tick() (int, error) {
+func (c *CPU) Step() (int, error) {
 	opcode, err := c.fetch()
 	if err != nil {
 		return 0, err

@@ -35,8 +35,8 @@ func (r *ROM) MBCType() uint8 {
 	return r.data[0x147]
 }
 
-func (r *ROM) ConnectToBus(bus *bus.Bus) error {
-	return bus.Map(r.bank0Range, r)
+func (r *ROM) ConnectToBus(b *bus.Bus) error {
+	return b.Map(r.bank0Range, r)
 }
 
 func (r *ROM) ReadByte(address uint16) (uint8, error) {

@@ -35,8 +35,8 @@ func (p *PPU) Step(cycles int) error {
 	return nil
 }
 
-func (p *PPU) ConnectToBus(bus *bus.Bus) error {
-	return bus.Map(p.ioRange, p)
+func (p *PPU) ConnectToBus(b *bus.Bus) error {
+	return b.Map(p.ioRange, p)
 }
 
 func (p *PPU) ReadByte(address uint16) (uint8, error) {

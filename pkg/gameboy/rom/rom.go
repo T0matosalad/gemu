@@ -49,12 +49,12 @@ func (r *ROM) ReadByte(address uint16) (uint8, error) {
 }
 
 func (r *ROM) ReadWord(address uint16) (uint16, error) {
-	hiByte, err := r.ReadByte(address)
+	loByte, err := r.ReadByte(address)
 	if err != nil {
 		return 0, err
 	}
 
-	loByte, err := r.ReadByte(address + 1)
+	hiByte, err := r.ReadByte(address + 1)
 	if err != nil {
 		return 0, err
 	}
@@ -76,11 +76,11 @@ func (r *ROM) WriteWord(address uint16, data uint16) error {
 	hiByte := (uint8)((data >> 8) & 0xff)
 	loByte := (uint8)(data & 0xff)
 
-	if err := r.WriteByte(address, hiByte); err != nil {
+	if err := r.WriteByte(address, loByte); err != nil {
 		return err
 	}
 
-	if err := r.WriteByte(address+1, loByte); err != nil {
+	if err := r.WriteByte(address+1, hiByte); err != nil {
 		return err
 	}
 

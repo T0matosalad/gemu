@@ -28,7 +28,12 @@ func Start(romPath string) error {
 	log.Debugf("Starting game... (%s)\n", rom.Title())
 
 	for {
-		_, err := cpu.Step()
+		cycles, err := cpu.Step()
+		if err != nil {
+			return err
+		}
+
+		err = ppu.Step(cycles)
 		if err != nil {
 			return err
 		}

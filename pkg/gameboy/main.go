@@ -6,6 +6,7 @@ import (
 
 	"github.com/d2verb/gemu/pkg/gameboy/bus"
 	"github.com/d2verb/gemu/pkg/gameboy/cpu"
+	"github.com/d2verb/gemu/pkg/gameboy/ppu"
 	"github.com/d2verb/gemu/pkg/gameboy/rom"
 	"github.com/d2verb/gemu/pkg/log"
 )
@@ -17,10 +18,12 @@ func Start(romPath string) error {
 
 	cpu := cpu.New()
 	rom := rom.New(romPath)
+	ppu := ppu.New()
 	bus := bus.New()
 
 	cpu.ConnectToBus(&bus)
 	rom.ConnectToBus(&bus)
+	ppu.ConnectToBus(&bus)
 
 	log.Debugf("Starting game... (%s)\n", rom.Title())
 

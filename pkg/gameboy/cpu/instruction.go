@@ -2,56 +2,75 @@ package cpu
 
 type instruction struct {
 	mnemonic string
-	cycles   int
-	handler  func(cpu *CPU) error
+	handler  func(cpu *CPU) (int, error)
 }
 
-func newInstruction(mnemonic string, cycles int, handler func(cpu *CPU) error) instruction {
+func newInstruction(mnemonic string, handler func(cpu *CPU) (int, error)) instruction {
 	return instruction{
 		mnemonic: mnemonic,
-		cycles:   cycles,
 		handler:  handler,
 	}
 }
 
 func newInstructionSet() map[uint16]instruction {
 	return map[uint16]instruction{
-		0x00: newInstruction("nop", 4, func(cpu *CPU) error {
-			return nil
+		0x00: newInstruction("nop", func(cpu *CPU) (int, error) {
+			return 4, nil
 		}),
-		0x31: newInstruction("ld SP, d16", 12, func(cpu *CPU) error {
+		0x20: newInstruction("jr nz, r8", func(cpu *CPU) (int, error) {
+			data, err := cpu.readOperandByte()
+			if err != nil {
+				return 0, err
+			}
+
+			if cpu.regs.Flag(ZFlag) {
+				return 8, nil
+			}
+
+			cpu.regs.PC += signExtFromU8ToU16(data)
+			return 12, nil
+		}),
+		0x31: newInstruction("ld SP, d16", func(cpu *CPU) (int, error) {
 			data, err := cpu.readOperandWord()
 			if err != nil {
-				return err
+				return 0, err
 			}
 			cpu.regs.SP = data
-			return nil
+			return 12, nil
 		}),
-		0xc3: newInstruction("jp a16", 16, func(cpu *CPU) error {
+		0xc3: newInstruction("jp a16", func(cpu *CPU) (int, error) {
 			address, err := cpu.readOperandWord()
 			if err != nil {
-				return err
+				return 0, err
 			}
 			cpu.regs.PC = address
-			return nil
+			return 16, nil
 		}),
-		0xf0: newInstruction("ldh A, (a8)", 12, func(cpu *CPU) error {
+		0xf0: newInstruction("ldh A, (a8)", func(cpu *CPU) (int, error) {
 			offset, err := cpu.readOperandByte()
 			if err != nil {
-				return err
+				return 0, err
 			}
 
 			data, err := cpu.bus.ReadByte(0xff00 + (uint16)(offset))
 			if err != nil {
-				return err
+				return 0, err
 			}
 
 			cpu.regs.A = data
-			return nil
+			return 12, nil
 		}),
-		0xf3: newInstruction("di", 4, func(cpu *CPU) error {
+		0xfe: newInstruction("cp d8", func(cpu *CPU) (int, error) {
+			data, err := cpu.readOperandByte()
+			if err != nil {
+				return 0, err
+			}
+			cpu.subtractByte(cpu.regs.A, data)
+			return 8, nil
+		}),
+		0xf3: newInstruction("di", func(cpu *CPU) (int, error) {
 			cpu.ime = false
-			return nil
+			return 4, nil
 		}),
 	}
 }
@@ -72,4 +91,33 @@ func (c *CPU) readOperandWord() (uint16, error) {
 	}
 	c.regs.PC += 2
 	return data, nil
+}
+
+// [TODO] update HFlag
+func (c *CPU) subtractByte(a uint8, b uint8) uint8 {
+	result := a - b
+
+	if result == 0 {
+		c.regs.SetFlag(ZFlag)
+	} else {
+		c.regs.UnsetFlag(ZFlag)
+	}
+
+	if a < b {
+		c.regs.SetFlag(CFlag)
+	} else {
+		c.regs.UnsetFlag(CFlag)
+	}
+
+	c.regs.SetFlag(NFlag)
+	return result
+}
+
+// Example: 0b1111_1010 to 0b1111_1111_1111_1010
+func signExtFromU8ToU16(from uint8) uint16 {
+	to := (uint16)(from)
+	if (from & 0b10000000) != 0 {
+		to |= 0xff00
+	}
+	return to
 }

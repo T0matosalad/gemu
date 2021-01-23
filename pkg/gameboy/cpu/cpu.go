@@ -39,11 +39,12 @@ func (c *CPU) Tick() (int, error) {
 
 	log.Debugf("cpu (PC: 0x%04x): %s\n", c.regs.PC, instruction.mnemonic)
 
-	if err := instruction.handler(c); err != nil {
+	cycles, err := instruction.handler(c)
+	if err != nil {
 		return 0, err
 	}
 
-	return instruction.cycles, nil
+	return cycles, nil
 }
 
 func (c *CPU) fetch() (uint16, error) {

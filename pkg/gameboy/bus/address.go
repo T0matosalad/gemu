@@ -23,7 +23,7 @@ func NewAddressRange(start uint16, end uint16) AddressRange {
 }
 
 func (a *AddressRange) IsOverlapped(b AddressRange) bool {
-	return b.End <= a.Start || b.Start <= a.End
+	return !(b.End < a.Start || a.End < b.Start)
 }
 
 func (a *AddressRange) Contains(address uint16) bool {

@@ -17,6 +17,14 @@ func newInstructionSet() map[uint16]instruction {
 		0x00: newInstruction("nop", func(cpu *CPU) (int, error) {
 			return 4, nil
 		}),
+		0x01: newInstruction("ld BC, d16", func(cpu *CPU) (int, error) {
+			data, err := cpu.readOperandWord()
+			if err != nil {
+				return 0, err
+			}
+			cpu.regs.SetBC(data)
+			return 12, nil
+		}),
 		0x20: newInstruction("jr nz, r8", func(cpu *CPU) (int, error) {
 			data, err := cpu.readOperandByte()
 			if err != nil {
@@ -30,6 +38,14 @@ func newInstructionSet() map[uint16]instruction {
 			cpu.regs.PC += signExtU8ToU16(data)
 			return 12, nil
 		}),
+		0x21: newInstruction("ld HL, d16", func(cpu *CPU) (int, error) {
+			data, err := cpu.readOperandWord()
+			if err != nil {
+				return 0, err
+			}
+			cpu.regs.SetHL(data)
+			return 12, nil
+		}),
 		0x31: newInstruction("ld SP, d16", func(cpu *CPU) (int, error) {
 			data, err := cpu.readOperandWord()
 			if err != nil {
@@ -38,6 +54,14 @@ func newInstructionSet() map[uint16]instruction {
 			cpu.regs.SP = data
 			return 12, nil
 		}),
+		0xaf: newInstruction("xor A", func(cpu *CPU) (int, error) {
+			cpu.regs.A = 0
+			cpu.regs.UnsetFlag(CFlag)
+			cpu.regs.UnsetFlag(HFlag)
+			cpu.regs.UnsetFlag(NFlag)
+			cpu.regs.SetFlag(ZFlag)
+			return 4, nil
+		}),
 		0xc3: newInstruction("jp a16", func(cpu *CPU) (int, error) {
 			address, err := cpu.readOperandWord()
 			if err != nil {
@@ -45,6 +69,28 @@ func newInstructionSet() map[uint16]instruction {
 			}
 			cpu.regs.PC = address
 			return 16, nil
+		}),
+		0xcd: newInstruction("call d16", func(cpu *CPU) (int, error) {
+			cpu.regs.SP -= 2
+			cpu.bus.WriteWord(cpu.regs.SP, cpu.regs.PC)
+			address, err := cpu.readOperandWord()
+			if err != nil {
+				return 0, err
+			}
+			cpu.regs.PC = address
+			return 24, nil
+		}),
+		0xe0: newInstruction("ldh (a8), A", func(cpu *CPU) (int, error) {
+			offset, err := cpu.readOperandByte()
+			if err != nil {
+				return 0, err
+			}
+
+			if err := cpu.bus.WriteByte(0xff00+(uint16)(offset), cpu.regs.A); err != nil {
+				return 0, err
+			}
+
+			return 12, nil
 		}),
 		0xf0: newInstruction("ldh A, (a8)", func(cpu *CPU) (int, error) {
 			offset, err := cpu.readOperandByte()

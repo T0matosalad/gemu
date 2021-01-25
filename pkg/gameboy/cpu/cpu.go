@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/d2verb/gemu/pkg/gameboy/bus"
+	"github.com/d2verb/gemu/pkg/log"
 )
 
 const Hz = 4194304
@@ -46,7 +47,7 @@ func (c *CPU) Step() (int, error) {
 		return 0, fmt.Errorf("Unknown opcode 0x%x (PC: 0x%04x)", opcode, c.regs.PC)
 	}
 
-	// log.Debugf("cpu (PC: 0x%04x): %s\n", c.regs.PC, instruction.mnemonic)
+	log.Debugf("cpu (PC: 0x%04x): %s\n", c.regs.PC, instruction.mnemonic)
 
 	cycles, err := instruction.handler(c)
 	if err != nil {

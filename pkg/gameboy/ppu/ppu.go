@@ -4,12 +4,11 @@ import (
 	"fmt"
 
 	"github.com/d2verb/gemu/pkg/gameboy/bus"
+	"github.com/d2verb/gemu/pkg/gameboy/lcd"
 )
 
 const (
 	CyclesPerScanLine = 456
-	ScreenHeight      = 144
-	ScreenWidth       = 160
 	VBlankLines       = 10
 )
 
@@ -17,11 +16,13 @@ type PPU struct {
 	ioRegs  [12]uint8
 	ioRange bus.AddressRange
 	cycles  int
+	l       *lcd.LCD
 }
 
-func New() PPU {
+func New(l *lcd.LCD) PPU {
 	return PPU{
 		ioRange: bus.NewAddressRange(0xff40, 0xff4b),
+		l:       l,
 	}
 }
 
@@ -30,7 +31,7 @@ func (p *PPU) Step(cycles int) error {
 	if p.cycles < CyclesPerScanLine {
 		return nil
 	}
-	p.SetLY((p.LY() + 1) % (ScreenHeight + VBlankLines))
+	p.SetLY((p.LY() + 1) % (lcd.ScreenHeight + VBlankLines))
 	p.cycles -= CyclesPerScanLine
 	return nil
 }

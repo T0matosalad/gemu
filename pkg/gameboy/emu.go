@@ -40,7 +40,7 @@ func newGameBoy(ctx context.Context, romPath string) GameBoy {
 func (g *GameBoy) start() {
 	log.Debugf("Starting game... (%s)\n", g.r.Title())
 
-	startTime := Now()
+	startTime := NowInMillisecond()
 	accumulatedCycles := 0
 
 	for {
@@ -63,18 +63,18 @@ func (g *GameBoy) start() {
 			// Ensure that the CPU only runs cpu.Hz cycles per second
 			accumulatedCycles += cycles
 			if accumulatedCycles >= cpu.Hz {
-				elapsedTime := Now() - startTime
+				elapsedTime := NowInMillisecond() - startTime
 				if elapsedTime < 1000 {
 					duration := time.Duration(1000 - elapsedTime)
 					time.Sleep(duration * time.Millisecond)
 				}
 				accumulatedCycles -= cpu.Hz
-				startTime = Now()
+				startTime = NowInMillisecond()
 			}
 		}
 	}
 }
 
-func Now() int64 {
+func NowInMillisecond() int64 {
 	return time.Now().Unix()*1000 + time.Now().UnixNano()/int64(time.Millisecond)
 }

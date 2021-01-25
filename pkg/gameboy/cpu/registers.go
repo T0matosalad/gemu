@@ -15,19 +15,28 @@ type Registers struct {
 
 func newRegisters() Registers {
 	return Registers{
-		A:  0,
-		F:  0,
-		B:  0,
-		C:  0,
-		D:  0,
-		E:  0,
-		H:  0,
-		L:  0,
+		// A and F can be accessed as 16-bit register AF
+		A: 0,
+		F: 0,
+
+		// B and C can be accessed as 16-bit register BC
+		B: 0,
+		C: 0,
+
+		// D and E can be accessed as 16-bit register DE
+		D: 0,
+		E: 0,
+
+		// H and L can be accessed as 16-bit register HL
+		H: 0,
+		L: 0,
+
 		SP: 0,
 		PC: 0x100, // Skip Boot ROM and execute Game ROM directly
 	}
 }
 
+// Bit position of each flag in F register
 const (
 	ZFlag = 3
 	NFlag = 2

@@ -6,12 +6,11 @@ func Start(romPath string) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	emu := newGameBoy(ctx, romPath)
-	gui := newGUI(ctx, "Gemu", &emu.l)
+	emu := newGameBoy(romPath)
+	gui := newGUI("Gemu", &emu.l)
 
-	go emu.start()
-
-	gui.start()
+	go emu.start(ctx, cancel)
+	gui.start(ctx, cancel)
 
 	return nil
 }

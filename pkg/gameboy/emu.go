@@ -13,23 +13,21 @@ import (
 )
 
 type GameBoy struct {
-	c   cpu.CPU
-	r   rom.ROM
-	l   lcd.LCD
-	p   ppu.PPU
-	b   bus.Bus
-	ctx context.Context
+	c cpu.CPU
+	r rom.ROM
+	l lcd.LCD
+	p ppu.PPU
+	b bus.Bus
 }
 
-func newGameBoy(ctx context.Context, romPath string) GameBoy {
+func newGameBoy(romPath string) GameBoy {
 	l := lcd.New()
 	g := GameBoy{
-		c:   cpu.New(),
-		r:   rom.New(romPath),
-		l:   l,
-		p:   ppu.New(&l),
-		b:   bus.New(),
-		ctx: ctx,
+		c: cpu.New(),
+		r: rom.New(romPath),
+		l: l,
+		p: ppu.New(&l),
+		b: bus.New(),
 	}
 	g.c.ConnectToBus(&g.b)
 	g.r.ConnectToBus(&g.b)
@@ -37,7 +35,7 @@ func newGameBoy(ctx context.Context, romPath string) GameBoy {
 	return g
 }
 
-func (g *GameBoy) start() {
+func (g *GameBoy) start(ctx context.Context, cancel context.CancelFunc) {
 	log.Debugf("Starting game... (%s)\n", g.r.Title())
 
 	startTime := NowInMillisecond()
@@ -45,18 +43,20 @@ func (g *GameBoy) start() {
 
 	for {
 		select {
-		case <-g.ctx.Done():
+		case <-ctx.Done():
 			return
 		default:
 			cycles, err := g.c.Step()
 			if err != nil {
 				log.Errorf("%s\n", err.Error())
+				cancel()
 				return
 			}
 
 			err = g.p.Step(cycles)
 			if err != nil {
 				log.Errorf("%s\n", err.Error())
+				cancel()
 				return
 			}
 

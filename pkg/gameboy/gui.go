@@ -57,5 +57,6 @@ func (g *GUI) start(ctx context.Context, cancel context.CancelFunc) {
 	}()
 
 	g.win.Resize(fyne.NewSize(lcd.ScreenWidth*g.ratio, lcd.ScreenHeight*g.ratio))
+	g.win.SetFixedSize(true)
 	g.win.ShowAndRun()
 }

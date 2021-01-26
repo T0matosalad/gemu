@@ -6,3 +6,7 @@ all: clean
 .PHONY: clean
 clean:
 	rm -rf dist
+
+.PHONY: test
+test:
+	go test -v ./...

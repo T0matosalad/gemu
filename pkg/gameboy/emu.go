@@ -20,7 +20,7 @@ type GameBoy struct {
 	b bus.Bus
 }
 
-func newGameBoy(romContent []uint8) GameBoy {
+func newGameBoy(romContent []uint8) *GameBoy {
 	l := lcd.New()
 	g := GameBoy{
 		c: cpu.New(),
@@ -32,7 +32,7 @@ func newGameBoy(romContent []uint8) GameBoy {
 	g.c.ConnectToBus(&g.b)
 	g.r.ConnectToBus(&g.b)
 	g.p.ConnectToBus(&g.b)
-	return g
+	return &g
 }
 
 func (g *GameBoy) start(ctx context.Context, cancel context.CancelFunc) {

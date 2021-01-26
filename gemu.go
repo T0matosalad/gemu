@@ -15,6 +15,7 @@ func Run() error {
 	flag.Usage = flagUsage
 
 	v := flag.Bool("v", false, "display version")
+	r := flag.Int("r", 1, "magnification ratio of screen")
 	flag.Parse()
 
 	if *v {
@@ -28,7 +29,7 @@ func Run() error {
 
 	log.SetMode(log.DebugMode)
 
-	return gameboy.Start(flag.Arg(0))
+	return gameboy.Start(flag.Arg(0), *r)
 }
 
 func flagUsage() {

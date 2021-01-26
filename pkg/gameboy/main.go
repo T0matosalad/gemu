@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 )
 
-func Start(romPath string) error {
+func Start(romPath string, ratio int) error {
 	romContent, err := ioutil.ReadFile(romPath)
 	if err != nil {
 		return err
@@ -15,7 +15,7 @@ func Start(romPath string) error {
 	defer cancel()
 
 	emu := newGameBoy(romContent)
-	gui := newGUI("Gemu", &emu.l)
+	gui := newGUI("Gemu", &emu.l, ratio)
 
 	go emu.start(ctx, cancel)
 	gui.start(ctx, cancel)

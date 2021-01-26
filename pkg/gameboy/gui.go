@@ -11,17 +11,19 @@ import (
 )
 
 type GUI struct {
-	app fyne.App
-	win fyne.Window
-	l   *lcd.LCD
+	app   fyne.App
+	win   fyne.Window
+	l     *lcd.LCD
+	ratio int
 }
 
-func newGUI(winTitle string, l *lcd.LCD) GUI {
+func newGUI(winTitle string, l *lcd.LCD, ratio int) GUI {
 	a := app.New()
 	return GUI{
-		app: a,
-		win: a.NewWindow(winTitle),
-		l:   l,
+		app:   a,
+		win:   a.NewWindow(winTitle),
+		l:     l,
+		ratio: ratio,
 	}
 }
 
@@ -43,7 +45,7 @@ func (g *GUI) start(ctx context.Context, cancel context.CancelFunc) {
 				g.l.Unlock()
 
 				g.win.SetContent(canvas.NewRasterWithPixels(func(x, y, w, h int) color.Color {
-					return color.Gray{Y: screen[y][x]}
+					return color.Gray{Y: screen[y/g.ratio][x/g.ratio]}
 				}))
 			case <-ctx.Done():
 				g.app.Quit()
@@ -54,6 +56,6 @@ func (g *GUI) start(ctx context.Context, cancel context.CancelFunc) {
 		}
 	}()
 
-	g.win.Resize(fyne.NewSize(lcd.ScreenWidth, lcd.ScreenHeight))
+	g.win.Resize(fyne.NewSize(lcd.ScreenWidth*g.ratio, lcd.ScreenHeight*g.ratio))
 	g.win.ShowAndRun()
 }

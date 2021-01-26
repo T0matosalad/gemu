@@ -37,6 +37,8 @@ func (c *CPU) ConnectToBus(b *bus.Bus) error {
 }
 
 func (c *CPU) Step() (int, error) {
+	instAddr := c.regs.PC
+
 	opcode, err := c.fetch()
 	if err != nil {
 		return 0, err
@@ -47,7 +49,7 @@ func (c *CPU) Step() (int, error) {
 		return 0, fmt.Errorf("Unknown opcode 0x%x (PC: 0x%04x)", opcode, c.regs.PC)
 	}
 
-	log.Debugf("cpu (PC: 0x%04x): %s\n", c.regs.PC, instruction.mnemonic)
+	log.Debugf("(cpu) [0x%04x]: %s\n", instAddr, instruction.mnemonic)
 
 	cycles, err := instruction.handler(c)
 	if err != nil {

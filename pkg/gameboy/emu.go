@@ -20,11 +20,11 @@ type GameBoy struct {
 	b bus.Bus
 }
 
-func newGameBoy(romPath string) GameBoy {
+func newGameBoy(romContent []uint8) GameBoy {
 	l := lcd.New()
 	g := GameBoy{
 		c: cpu.New(),
-		r: rom.New(romPath),
+		r: rom.New(romContent),
 		l: l,
 		p: ppu.New(&l),
 		b: bus.New(),
@@ -48,14 +48,14 @@ func (g *GameBoy) start(ctx context.Context, cancel context.CancelFunc) {
 		default:
 			cycles, err := g.c.Step()
 			if err != nil {
-				log.Errorf("%s\n", err.Error())
+				log.Errorf("%s\n", err)
 				cancel()
 				return
 			}
 
 			err = g.p.Step(cycles)
 			if err != nil {
-				log.Errorf("%s\n", err.Error())
+				log.Errorf("%s\n", err)
 				cancel()
 				return
 			}

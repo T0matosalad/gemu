@@ -2,8 +2,6 @@ package rom
 
 import (
 	"fmt"
-	"io/ioutil"
-	"log"
 
 	"github.com/d2verb/gemu/pkg/gameboy/bus"
 )
@@ -13,13 +11,9 @@ type ROM struct {
 	bank0Range bus.AddressRange
 }
 
-func New(romPath string) ROM {
-	content, err := ioutil.ReadFile(romPath)
-	if err != nil {
-		log.Fatal(err)
-	}
+func New(data []uint8) ROM {
 	return ROM{
-		data:       content,
+		data:       data,
 		bank0Range: bus.NewAddressRange(0x0000, 0x3fff),
 	}
 }

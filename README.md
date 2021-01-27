@@ -1,3 +1,5 @@
+<center><img src="gemu.png" width="200"></center>
+
 # GEMU: Gameboy EMUlator
 GEMU is a GAMEBOY emulator written in golang.
 

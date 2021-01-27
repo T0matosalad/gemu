@@ -25,6 +25,31 @@ func newInstructionSet() map[uint16]instruction {
 			cpu.regs.SetBC(data)
 			return 12, nil
 		}),
+		0x04: newInstruction("inc B", func(cpu *CPU) (int, error) {
+			cpu.regs.B = cpu.addByte(cpu.regs.B, 1, false)
+			return 4, nil
+		}),
+		0x05: newInstruction("dec B", func(cpu *CPU) (int, error) {
+			cpu.regs.B = cpu.subByte(cpu.regs.B, 1, false)
+			return 4, nil
+		}),
+		0x0c: newInstruction("inc C", func(cpu *CPU) (int, error) {
+			cpu.regs.C = cpu.addByte(cpu.regs.C, 1, false)
+			return 4, nil
+		}),
+		0x0d: newInstruction("dec C", func(cpu *CPU) (int, error) {
+			cpu.regs.C = cpu.subByte(cpu.regs.C, 1, false)
+			return 4, nil
+		}),
+		0x18: newInstruction("jr r8", func(cpu *CPU) (int, error) {
+			data, err := cpu.readOperandByte()
+			if err != nil {
+				return 0, err
+			}
+
+			cpu.regs.PC += signExtU8ToU16(data)
+			return 12, nil
+		}),
 		0x20: newInstruction("jr nz, r8", func(cpu *CPU) (int, error) {
 			data, err := cpu.readOperandByte()
 			if err != nil {
@@ -45,6 +70,17 @@ func newInstructionSet() map[uint16]instruction {
 			}
 			cpu.regs.SetHL(data)
 			return 12, nil
+		}),
+		0x22: newInstruction("ld (HL+), A", func(cpu *CPU) (int, error) {
+			data, err := cpu.readOperandByte()
+			if err != nil {
+				return 0, err
+			}
+			if err := cpu.bus.WriteByte(cpu.regs.HL(), data); err != nil {
+				return 0, err
+			}
+			cpu.regs.SetHL(cpu.regs.HL() + 1)
+			return 8, nil
 		}),
 		0x31: newInstruction("ld SP, d16", func(cpu *CPU) (int, error) {
 			data, err := cpu.readOperandWord()
@@ -70,9 +106,20 @@ func newInstructionSet() map[uint16]instruction {
 			cpu.regs.PC = address
 			return 16, nil
 		}),
+		0xc9: newInstruction("ret", func(cpu *CPU) (int, error) {
+			address, err := cpu.bus.ReadWord(cpu.regs.SP)
+			if err != nil {
+				return 0, err
+			}
+			cpu.regs.PC = address
+			cpu.regs.SP += 2
+			return 16, nil
+		}),
 		0xcd: newInstruction("call d16", func(cpu *CPU) (int, error) {
 			cpu.regs.SP -= 2
-			cpu.bus.WriteWord(cpu.regs.SP, cpu.regs.PC)
+			if err := cpu.bus.WriteWord(cpu.regs.SP, cpu.regs.PC); err != nil {
+				return 0, err
+			}
 			address, err := cpu.readOperandWord()
 			if err != nil {
 				return 0, err
@@ -111,7 +158,7 @@ func newInstructionSet() map[uint16]instruction {
 			if err != nil {
 				return 0, err
 			}
-			cpu.subtractByte(cpu.regs.A, data)
+			cpu.subByte(cpu.regs.A, data, true)
 			return 8, nil
 		}),
 		0xf3: newInstruction("di", func(cpu *CPU) (int, error) {
@@ -140,13 +187,44 @@ func (c *CPU) readOperandWord() (uint16, error) {
 }
 
 // [TODO] update HFlag
-func (c *CPU) subtractByte(a uint8, b uint8) uint8 {
-	result := a - b
+func (c *CPU) addByte(a uint8, b uint8, updateCFlag bool) uint8 {
+	result := a + b
+
+	c.regs.UnsetFlag(NFlag)
 
 	if result == 0 {
 		c.regs.SetFlag(ZFlag)
 	} else {
 		c.regs.UnsetFlag(ZFlag)
+	}
+
+	if !updateCFlag {
+		return result
+	}
+
+	if a+b <= a {
+		c.regs.SetFlag(CFlag)
+	} else {
+		c.regs.UnsetFlag(CFlag)
+	}
+
+	return result
+}
+
+// [TODO] update HFlag
+func (c *CPU) subByte(a uint8, b uint8, updateCFlag bool) uint8 {
+	result := a - b
+
+	c.regs.SetFlag(NFlag)
+
+	if result == 0 {
+		c.regs.SetFlag(ZFlag)
+	} else {
+		c.regs.UnsetFlag(ZFlag)
+	}
+
+	if !updateCFlag {
+		return result
 	}
 
 	if a < b {
@@ -155,7 +233,6 @@ func (c *CPU) subtractByte(a uint8, b uint8) uint8 {
 		c.regs.UnsetFlag(CFlag)
 	}
 
-	c.regs.SetFlag(NFlag)
 	return result
 }
 

@@ -50,7 +50,7 @@ func (r *RAM) ReadByte(address uint16) (uint8, error) {
 		return r.ram[offset], nil
 	}
 
-	return 0, fmt.Errorf("ROM cannot be accessed at 0x%04x", address)
+	return 0, fmt.Errorf("RAM cannot be accessed at 0x%04x", address)
 }
 
 func (r *RAM) ReadWord(address uint16) (uint16, error) {
@@ -86,7 +86,7 @@ func (r *RAM) WriteByte(address uint16, data uint8) error {
 		return nil
 	}
 
-	return fmt.Errorf("ROM cannot be accessed at 0x%04x", address)
+	return fmt.Errorf("RAM cannot be accessed at 0x%04x", address)
 }
 
 func (r *RAM) WriteWord(address uint16, data uint16) error {

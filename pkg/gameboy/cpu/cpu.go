@@ -46,7 +46,7 @@ func (c *CPU) Step() (int, error) {
 
 	instruction, ok := c.instructionSet[opcode]
 	if !ok {
-		return 0, fmt.Errorf("Unknown opcode 0x%x (PC: 0x%04x)", opcode, c.regs.PC)
+		return 0, fmt.Errorf("Unknown opcode 0x%x (PC: 0x%04x)", opcode, instAddr)
 	}
 
 	log.Debugf("(cpu) [0x%04x]: %s\n", instAddr, instruction.mnemonic)

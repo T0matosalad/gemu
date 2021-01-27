@@ -41,6 +41,15 @@ func newInstructionSet() map[uint16]instruction {
 			cpu.regs.C = cpu.subByte(cpu.regs.C, 1, false)
 			return 4, nil
 		}),
+		0x0e: newInstruction("ld C, d8", func(cpu *CPU) (int, error) {
+			data, err := cpu.readOperandByte()
+			if err != nil {
+				return 0, err
+			}
+
+			cpu.regs.C = data
+			return 12, nil
+		}),
 		0x18: newInstruction("jr r8", func(cpu *CPU) (int, error) {
 			data, err := cpu.readOperandByte()
 			if err != nil {

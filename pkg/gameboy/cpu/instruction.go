@@ -72,11 +72,7 @@ func newInstructionSet() map[uint16]instruction {
 			return 12, nil
 		}),
 		0x22: newInstruction("ld (HL+), A", func(cpu *CPU) (int, error) {
-			data, err := cpu.readOperandByte()
-			if err != nil {
-				return 0, err
-			}
-			if err := cpu.bus.WriteByte(cpu.regs.HL(), data); err != nil {
+			if err := cpu.bus.WriteByte(cpu.regs.HL(), cpu.regs.A); err != nil {
 				return 0, err
 			}
 			cpu.regs.SetHL(cpu.regs.HL() + 1)
@@ -117,11 +113,11 @@ func newInstructionSet() map[uint16]instruction {
 		}),
 		0xcd: newInstruction("call d16", func(cpu *CPU) (int, error) {
 			cpu.regs.SP -= 2
-			if err := cpu.bus.WriteWord(cpu.regs.SP, cpu.regs.PC); err != nil {
-				return 0, err
-			}
 			address, err := cpu.readOperandWord()
 			if err != nil {
+				return 0, err
+			}
+			if err := cpu.bus.WriteWord(cpu.regs.SP, cpu.regs.PC); err != nil {
 				return 0, err
 			}
 			cpu.regs.PC = address

@@ -15,7 +15,7 @@ func Start(romPath string, ratio int) error {
 	defer cancel()
 
 	emu := newGameBoy(romContent)
-	gui := newGUI("Gemu", &emu.l, ratio)
+	gui := newGUI("Gemu", emu.l, ratio)
 
 	go emu.start(ctx, cancel)
 	gui.start(ctx, cancel)

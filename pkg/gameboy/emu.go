@@ -17,7 +17,7 @@ type GameBoy struct {
 	c cpu.CPU
 	r rom.ROM
 	a ram.RAM
-	l lcd.LCD
+	l *lcd.LCD
 	p ppu.PPU
 	b bus.Bus
 }
@@ -29,7 +29,7 @@ func newGameBoy(romContent []uint8) *GameBoy {
 		r: rom.New(romContent),
 		a: ram.New(),
 		l: l,
-		p: ppu.New(&l),
+		p: ppu.New(l),
 		b: bus.New(),
 	}
 	g.c.ConnectToBus(&g.b)

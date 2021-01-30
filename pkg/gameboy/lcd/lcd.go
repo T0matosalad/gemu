@@ -13,8 +13,8 @@ type LCD struct {
 	Screen  [ScreenHeight][ScreenWidth]uint8
 }
 
-func New() LCD {
-	return LCD{
+func New() *LCD {
+	return &LCD{
 		Updated: make(chan interface{}),
 	}
 }

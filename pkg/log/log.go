@@ -18,8 +18,8 @@ const (
 
 var mode Mode = DebugMode
 
-func SetMode(mode Mode) {
-	mode = mode
+func SetMode(m Mode) {
+	mode = m
 }
 
 func Fprintf(stream io.Writer, format string, args ...interface{}) {

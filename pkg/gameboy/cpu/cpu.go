@@ -49,7 +49,7 @@ func (c *CPU) Step() (int, error) {
 		return 0, fmt.Errorf("Unknown opcode 0x%x (PC: 0x%04x)", opcode, instAddr)
 	}
 
-	log.Debugf("(cpu) [0x%04x]: %s\n", instAddr, instruction.mnemonic)
+	log.Verbosef("(cpu) [0x%04x]: %s\n", instAddr, instruction.mnemonic)
 
 	cycles, err := instruction.handler(c)
 	if err != nil {

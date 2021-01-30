@@ -10,7 +10,8 @@ import (
 type Mode int
 
 const (
-	DebugMode Mode = iota + 1
+	VerboseMode Mode = iota + 1
+	DebugMode
 	WarnMode
 	ErrorMode
 	FatalMode
@@ -24,19 +25,21 @@ func SetMode(m Mode) {
 
 func ModeToString(m Mode) string {
 	return map[Mode]string{
-		DebugMode: "debug",
-		WarnMode:  "warn",
-		ErrorMode: "error",
-		FatalMode: "fatal",
+		VerboseMode: "verbose",
+		DebugMode:   "debug",
+		WarnMode:    "warn",
+		ErrorMode:   "error",
+		FatalMode:   "fatal",
 	}[m]
 }
 
 func StringToMode(s string) (Mode, error) {
 	m, ok := map[string]Mode{
-		"debug": DebugMode,
-		"warn":  WarnMode,
-		"error": ErrorMode,
-		"fatal": FatalMode,
+		"verbose": VerboseMode,
+		"debug":   DebugMode,
+		"warn":    WarnMode,
+		"error":   ErrorMode,
+		"fatal":   FatalMode,
 	}[s]
 	if !ok {
 		return 0, fmt.Errorf("No corresponding logging mode for %s", s)
@@ -47,6 +50,14 @@ func StringToMode(s string) (Mode, error) {
 func Fprintf(stream io.Writer, format string, args ...interface{}) {
 	format = fmt.Sprintf("[%s]%s", time.Now().Format("2006-01-02 15:04:05"), format)
 	fmt.Fprintf(stream, format, args...)
+}
+
+func Verbosef(format string, args ...interface{}) {
+	if mode > VerboseMode {
+		return
+	}
+	format = fmt.Sprintf("\x1b[32m[verbose]\x1b[0m %s", format)
+	Fprintf(os.Stdout, format, args...)
 }
 
 func Debugf(format string, args ...interface{}) {

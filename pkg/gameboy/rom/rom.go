@@ -18,6 +18,10 @@ func New(data []uint8) ROM {
 	}
 }
 
+func (r *ROM) String() string {
+	return fmt.Sprintf("Title: %s, MBCType: %d", r.Title(), r.MBCType())
+}
+
 func (r *ROM) Title() []uint8 {
 	start, end := 0x134, 0x134
 	for ; end < 0x144 && r.data[end] != 0; end++ {

@@ -40,7 +40,7 @@ func newGameBoy(romContent []uint8) *GameBoy {
 }
 
 func (g *GameBoy) start(ctx context.Context, cancel context.CancelFunc) {
-	log.Debugf("Starting game... (%s)\n", g.r.Title())
+	log.Debugf("Starting game... (%s)\n", g.r.String())
 
 	startTime := NowInMillisecond()
 	accumulatedCycles := 0

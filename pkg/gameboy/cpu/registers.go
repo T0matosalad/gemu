@@ -62,6 +62,15 @@ func (r *Registers) SetBC(data uint16) {
 	r.B = (uint8)((data >> 8) & 0xff)
 }
 
+func (r *Registers) DE() uint16 {
+	return (uint16)(r.B)<<r.D | (uint16)(r.E)
+}
+
+func (r *Registers) SetDE(data uint16) {
+	r.D = (uint8)(data & 0xff)
+	r.E = (uint8)((data >> 8) & 0xff)
+}
+
 func (r *Registers) Flag(bitPos int) bool {
 	return ((r.F >> bitPos) & 1) == 1
 }

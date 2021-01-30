@@ -33,6 +33,14 @@ func newInstructionSet() map[uint16]instruction {
 			cpu.regs.B = cpu.subByte(cpu.regs.B, 1, false)
 			return 4, nil
 		}),
+		0x06: newInstruction("ld B, d8", func(cpu *CPU) (int, error) {
+			data, err := cpu.readOperandByte()
+			if err != nil {
+				return 0, nil
+			}
+			cpu.regs.B = data
+			return 8, nil
+		}),
 		0x0c: newInstruction("inc C", func(cpu *CPU) (int, error) {
 			cpu.regs.C = cpu.addByte(cpu.regs.C, 1, false)
 			return 4, nil
@@ -49,6 +57,24 @@ func newInstructionSet() map[uint16]instruction {
 
 			cpu.regs.C = data
 			return 12, nil
+		}),
+		0x11: newInstruction("ld DE, d16", func(cpu *CPU) (int, error) {
+			data, err := cpu.readOperandWord()
+			if err != nil {
+				return 0, err
+			}
+			cpu.regs.SetDE(data)
+			return 12, nil
+		}),
+		0x12: newInstruction("ld (DE), A", func(cpu *CPU) (int, error) {
+			if err := cpu.bus.WriteByte(cpu.regs.DE(), cpu.regs.A); err != nil {
+				return 0, err
+			}
+			return 8, nil
+		}),
+		0x13: newInstruction("inc DE", func(cpu *CPU) (int, error) {
+			cpu.regs.SetDE(cpu.regs.DE() + 1)
+			return 8, nil
 		}),
 		0x18: newInstruction("jr r8", func(cpu *CPU) (int, error) {
 			data, err := cpu.readOperandByte()
@@ -81,6 +107,15 @@ func newInstructionSet() map[uint16]instruction {
 			return 12, nil
 		}),
 		0x22: newInstruction("ld (HL+), A", func(cpu *CPU) (int, error) {
+			data, err := cpu.bus.ReadByte(cpu.regs.HL())
+			if err != nil {
+				return 0, err
+			}
+			cpu.regs.A = data
+			cpu.regs.SetHL(cpu.regs.HL() + 1)
+			return 8, nil
+		}),
+		0x2a: newInstruction("ld A, (HL+)", func(cpu *CPU) (int, error) {
 			if err := cpu.bus.WriteByte(cpu.regs.HL(), cpu.regs.A); err != nil {
 				return 0, err
 			}
@@ -94,6 +129,14 @@ func newInstructionSet() map[uint16]instruction {
 			}
 			cpu.regs.SP = data
 			return 12, nil
+		}),
+		0x3e: newInstruction("ld A, d8", func(cpu *CPU) (int, error) {
+			data, err := cpu.readOperandByte()
+			if err != nil {
+				return 0, err
+			}
+			cpu.regs.A = data
+			return 8, nil
 		}),
 		0xaf: newInstruction("xor A", func(cpu *CPU) (int, error) {
 			cpu.regs.A = 0

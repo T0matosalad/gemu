@@ -6,15 +6,20 @@ import (
 	"github.com/d2verb/gemu/pkg/gameboy/bus"
 )
 
+type MBC interface {
+	AddressRanges() []bus.AddressRange
+	Data() []uint8
+	ReadByte(uint16) (uint8, error)
+	WriteByte(uint16, uint8) error
+}
+
 type ROM struct {
-	data       []uint8
-	bank0Range bus.AddressRange
+	m MBC
 }
 
 func New(data []uint8) ROM {
 	return ROM{
-		data:       data,
-		bank0Range: bus.NewAddressRange(0x0000, 0x3fff),
+		m: NewMBC0(data),
 	}
 }
 
@@ -24,26 +29,26 @@ func (r *ROM) String() string {
 
 func (r *ROM) Title() []uint8 {
 	start, end := 0x134, 0x134
-	for ; end < 0x144 && r.data[end] != 0; end++ {
+	for ; end < 0x144 && r.m.Data()[end] != 0; end++ {
 	}
-	return r.data[start:end]
+	return r.m.Data()[start:end]
 }
 
 func (r *ROM) MBCType() uint8 {
-	return r.data[0x147]
+	return r.m.Data()[0x147]
 }
 
 func (r *ROM) ConnectToBus(b *bus.Bus) error {
-	return b.Map(r.bank0Range, r)
+	for _, _range := range r.m.AddressRanges() {
+		if err := b.Map(_range, r); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (r *ROM) ReadByte(address uint16) (uint8, error) {
-	if r.bank0Range.Contains(address) {
-		offset := address - r.bank0Range.Start
-		return r.data[offset], nil
-	}
-
-	return 0, fmt.Errorf("ROM cannot be accessed at 0x%04x", address)
+	return r.m.ReadByte(address)
 }
 
 func (r *ROM) ReadWord(address uint16) (uint16, error) {
@@ -61,13 +66,7 @@ func (r *ROM) ReadWord(address uint16) (uint16, error) {
 }
 
 func (r *ROM) WriteByte(address uint16, data uint8) error {
-	if r.bank0Range.Contains(address) {
-		offset := address - r.bank0Range.Start
-		r.data[offset] = data
-		return nil
-	}
-
-	return fmt.Errorf("ROM cannot be accessed at 0x%04x", address)
+	return r.m.WriteByte(address, data)
 }
 
 func (r *ROM) WriteWord(address uint16, data uint16) error {

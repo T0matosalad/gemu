@@ -10,8 +10,8 @@ type ROM struct {
 	m MBC
 }
 
-func New(data []uint8) ROM {
-	return ROM{
+func New(data []uint8) *ROM {
+	return &ROM{
 		m: NewMBC0(data),
 	}
 }

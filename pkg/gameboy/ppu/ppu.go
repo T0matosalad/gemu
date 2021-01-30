@@ -21,8 +21,8 @@ type PPU struct {
 	l        *lcd.LCD
 }
 
-func New(l *lcd.LCD) PPU {
-	return PPU{
+func New(l *lcd.LCD) *PPU {
+	return &PPU{
 		ioRange:  bus.NewAddressRange(0xff40, 0xff4b),
 		oamRange: bus.NewAddressRange(0xfe00, 0xfe9f),
 		l:        l,

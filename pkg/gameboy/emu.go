@@ -14,12 +14,12 @@ import (
 )
 
 type GameBoy struct {
-	c cpu.CPU
-	r rom.ROM
-	a ram.RAM
+	c *cpu.CPU
+	r *rom.ROM
+	a *ram.RAM
 	l *lcd.LCD
-	p ppu.PPU
-	b bus.Bus
+	p *ppu.PPU
+	b *bus.Bus
 }
 
 func newGameBoy(romContent []uint8) *GameBoy {
@@ -32,10 +32,10 @@ func newGameBoy(romContent []uint8) *GameBoy {
 		p: ppu.New(l),
 		b: bus.New(),
 	}
-	g.c.ConnectToBus(&g.b)
-	g.r.ConnectToBus(&g.b)
-	g.a.ConnectToBus(&g.b)
-	g.p.ConnectToBus(&g.b)
+	g.c.ConnectToBus(g.b)
+	g.r.ConnectToBus(g.b)
+	g.a.ConnectToBus(g.b)
+	g.p.ConnectToBus(g.b)
 	return &g
 }
 

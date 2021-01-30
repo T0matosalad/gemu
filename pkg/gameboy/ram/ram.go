@@ -14,8 +14,8 @@ type RAM struct {
 	hramRange bus.AddressRange
 }
 
-func New() RAM {
-	return RAM{
+func New() *RAM {
+	return &RAM{
 		vramRange: bus.NewAddressRange(0x8000, 0x9fff),
 		wramRange: bus.NewAddressRange(0xc000, 0xdfff),
 		eramRange: bus.NewAddressRange(0xe000, 0xfdff),

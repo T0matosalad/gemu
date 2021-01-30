@@ -8,8 +8,8 @@ type Bus struct {
 	addressSpace map[AddressRange]Addressable
 }
 
-func New() Bus {
-	return Bus{
+func New() *Bus {
+	return &Bus{
 		addressSpace: map[AddressRange]Addressable{},
 	}
 }

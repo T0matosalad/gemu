@@ -18,8 +18,8 @@ type CPU struct {
 	instructionSet map[uint16]instruction
 }
 
-func New() CPU {
-	return CPU{
+func New() *CPU {
+	return &CPU{
 		regs:           newRegisters(),
 		instructionSet: newInstructionSet(),
 	}

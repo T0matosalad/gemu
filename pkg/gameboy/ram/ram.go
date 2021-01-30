@@ -7,10 +7,11 @@ import (
 )
 
 type RAM struct {
-	ram       [0x4000]uint8 // 8KB Video RAM and 8KB Work RAM
+	ram       [0x407f]uint8 // 8KB Video RAM and 8KB Work RAM
 	vramRange bus.AddressRange
 	wramRange bus.AddressRange
 	eramRange bus.AddressRange
+	hramRange bus.AddressRange
 }
 
 func New() RAM {
@@ -18,6 +19,7 @@ func New() RAM {
 		vramRange: bus.NewAddressRange(0x8000, 0x9fff),
 		wramRange: bus.NewAddressRange(0xc000, 0xdfff),
 		eramRange: bus.NewAddressRange(0xe000, 0xfdff),
+		hramRange: bus.NewAddressRange(0xff80, 0xfffe),
 	}
 }
 
@@ -29,6 +31,9 @@ func (r *RAM) ConnectToBus(b *bus.Bus) error {
 		return err
 	}
 	if err := b.Map(r.eramRange, r); err != nil {
+		return err
+	}
+	if err := b.Map(r.hramRange, r); err != nil {
 		return err
 	}
 	return nil
@@ -47,6 +52,11 @@ func (r *RAM) ReadByte(address uint16) (uint8, error) {
 
 	if r.eramRange.Contains(address) {
 		offset := address - r.eramRange.Start
+		return r.ram[offset], nil
+	}
+
+	if r.hramRange.Contains(address) {
+		offset := address - r.hramRange.Start + 0x4000
 		return r.ram[offset], nil
 	}
 
@@ -82,6 +92,12 @@ func (r *RAM) WriteByte(address uint16, data uint8) error {
 
 	if r.eramRange.Contains(address) {
 		offset := address - r.eramRange.Start
+		r.ram[offset] = data
+		return nil
+	}
+
+	if r.hramRange.Contains(address) {
+		offset := address - r.hramRange.Start + 0x4000
 		r.ram[offset] = data
 		return nil
 	}

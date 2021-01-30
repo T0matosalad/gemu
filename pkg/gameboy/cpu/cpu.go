@@ -14,6 +14,7 @@ type CPU struct {
 	ime            bool  // Interrupt Master Enable Flag
 	ie             uint8 // Interrupt Enable
 	_if            uint8 // Interrupt Flag
+	halt           bool
 	bus            *bus.Bus
 	instructionSet map[uint16]instruction
 }
@@ -21,6 +22,7 @@ type CPU struct {
 func New() *CPU {
 	return &CPU{
 		regs:           newRegisters(),
+		halt:           false,
 		instructionSet: newInstructionSet(),
 	}
 }
@@ -37,6 +39,10 @@ func (c *CPU) ConnectToBus(b *bus.Bus) error {
 }
 
 func (c *CPU) Step() (int, error) {
+	if c.halt {
+		return 4, nil
+	}
+
 	instAddr := c.regs.PC
 
 	opcode, err := c.fetch()

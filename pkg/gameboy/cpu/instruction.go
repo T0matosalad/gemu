@@ -138,6 +138,10 @@ func newInstructionSet() map[uint16]instruction {
 			cpu.regs.A = data
 			return 8, nil
 		}),
+		0x76: newInstruction("halt", func(cpu *CPU) (int, error) {
+			cpu.halt = true
+			return 4, nil
+		}),
 		0xaf: newInstruction("xor A", func(cpu *CPU) (int, error) {
 			cpu.regs.A = 0
 			cpu.regs.UnsetFlag(CFlag)

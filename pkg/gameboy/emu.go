@@ -22,11 +22,17 @@ type GameBoy struct {
 	b *bus.Bus
 }
 
-func newGameBoy(romContent []uint8) *GameBoy {
+func newGameBoy(romContent []uint8) (*GameBoy, error) {
 	l := lcd.New()
+
+	r, err := rom.New(romContent)
+	if err != nil {
+		return nil, err
+	}
+
 	g := GameBoy{
 		c: cpu.New(),
-		r: rom.New(romContent),
+		r: r,
 		a: ram.New(),
 		l: l,
 		p: ppu.New(l),
@@ -36,7 +42,8 @@ func newGameBoy(romContent []uint8) *GameBoy {
 	g.r.ConnectToBus(g.b)
 	g.a.ConnectToBus(g.b)
 	g.p.ConnectToBus(g.b)
-	return &g
+
+	return &g, nil
 }
 
 func (g *GameBoy) start(ctx context.Context, cancel context.CancelFunc) {

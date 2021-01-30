@@ -10,9 +10,16 @@ type ROM struct {
 	m MBC
 }
 
-func New(data []uint8) *ROM {
-	return &ROM{
-		m: NewMBC0(data),
+func New(data []uint8) (*ROM, error) {
+	mbcType := data[0x147]
+
+	switch mbcType {
+	case 0:
+		return &ROM{
+			m: NewMBC0(data),
+		}, nil
+	default:
+		return nil, fmt.Errorf("MBC type %d is not supported", mbcType)
 	}
 }
 

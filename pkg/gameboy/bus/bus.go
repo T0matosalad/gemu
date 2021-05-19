@@ -24,36 +24,36 @@ func (b *Bus) Map(targetRange AddressRange, device Addressable) error {
 	return nil
 }
 
-func (b *Bus) ReadByte(address uint16) (uint8, error) {
+func (b *Bus) ReadUInt8(address uint16) (uint8, error) {
 	device, err := b.findDeviceFromAddress(address)
 	if err != nil {
 		return 0, err
 	}
-	return device.ReadByte(address)
+	return device.ReadUInt8(address)
 }
 
-func (b *Bus) ReadWord(address uint16) (uint16, error) {
+func (b *Bus) ReadUInt16(address uint16) (uint16, error) {
 	device, err := b.findDeviceFromAddress(address)
 	if err != nil {
 		return 0, err
 	}
-	return device.ReadWord(address)
+	return device.ReadUInt16(address)
 }
 
-func (b *Bus) WriteByte(address uint16, data uint8) error {
+func (b *Bus) WriteUInt8(address uint16, data uint8) error {
 	device, err := b.findDeviceFromAddress(address)
 	if err != nil {
 		return err
 	}
-	return device.WriteByte(address, data)
+	return device.WriteUInt8(address, data)
 }
 
-func (b *Bus) WriteWord(address uint16, data uint16) error {
+func (b *Bus) WriteUInt16(address uint16, data uint16) error {
 	device, err := b.findDeviceFromAddress(address)
 	if err != nil {
 		return err
 	}
-	return device.WriteWord(address, data)
+	return device.WriteUInt16(address, data)
 }
 
 func (b *Bus) findDeviceFromAddress(address uint16) (Addressable, error) {

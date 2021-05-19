@@ -39,7 +39,7 @@ func (r *RAM) ConnectToBus(b *bus.Bus) error {
 	return nil
 }
 
-func (r *RAM) ReadByte(address uint16) (uint8, error) {
+func (r *RAM) ReadUInt8(address uint16) (uint8, error) {
 	if r.vramRange.Contains(address) {
 		offset := address - r.vramRange.Start
 		return r.ram[offset], nil
@@ -63,13 +63,13 @@ func (r *RAM) ReadByte(address uint16) (uint8, error) {
 	return 0, fmt.Errorf("RAM cannot be accessed at 0x%04x", address)
 }
 
-func (r *RAM) ReadWord(address uint16) (uint16, error) {
-	loByte, err := r.ReadByte(address)
+func (r *RAM) ReadUInt16(address uint16) (uint16, error) {
+	loByte, err := r.ReadUInt8(address)
 	if err != nil {
 		return 0, err
 	}
 
-	hiByte, err := r.ReadByte(address + 1)
+	hiByte, err := r.ReadUInt8(address + 1)
 	if err != nil {
 		return 0, err
 	}
@@ -77,7 +77,7 @@ func (r *RAM) ReadWord(address uint16) (uint16, error) {
 	return ((uint16)(hiByte)<<8 | (uint16)(loByte)), nil
 }
 
-func (r *RAM) WriteByte(address uint16, data uint8) error {
+func (r *RAM) WriteUInt8(address uint16, data uint8) error {
 	if r.vramRange.Contains(address) {
 		offset := address - r.vramRange.Start
 		r.ram[offset] = data
@@ -105,15 +105,15 @@ func (r *RAM) WriteByte(address uint16, data uint8) error {
 	return fmt.Errorf("RAM cannot be accessed at 0x%04x", address)
 }
 
-func (r *RAM) WriteWord(address uint16, data uint16) error {
+func (r *RAM) WriteUInt16(address uint16, data uint16) error {
 	hiByte := (uint8)((data >> 8) & 0xff)
 	loByte := (uint8)(data & 0xff)
 
-	if err := r.WriteByte(address, loByte); err != nil {
+	if err := r.WriteUInt8(address, loByte); err != nil {
 		return err
 	}
 
-	if err := r.WriteByte(address+1, hiByte); err != nil {
+	if err := r.WriteUInt8(address+1, hiByte); err != nil {
 		return err
 	}
 

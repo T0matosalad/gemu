@@ -47,17 +47,17 @@ func (r *ROM) ConnectToBus(b *bus.Bus) error {
 	return nil
 }
 
-func (r *ROM) ReadByte(address uint16) (uint8, error) {
-	return r.m.ReadByte(address)
+func (r *ROM) ReadUInt8(address uint16) (uint8, error) {
+	return r.m.ReadUInt8(address)
 }
 
-func (r *ROM) ReadWord(address uint16) (uint16, error) {
-	loByte, err := r.ReadByte(address)
+func (r *ROM) ReadUInt16(address uint16) (uint16, error) {
+	loByte, err := r.ReadUInt8(address)
 	if err != nil {
 		return 0, err
 	}
 
-	hiByte, err := r.ReadByte(address + 1)
+	hiByte, err := r.ReadUInt8(address + 1)
 	if err != nil {
 		return 0, err
 	}
@@ -65,19 +65,19 @@ func (r *ROM) ReadWord(address uint16) (uint16, error) {
 	return ((uint16)(hiByte)<<8 | (uint16)(loByte)), nil
 }
 
-func (r *ROM) WriteByte(address uint16, data uint8) error {
-	return r.m.WriteByte(address, data)
+func (r *ROM) WriteUInt8(address uint16, data uint8) error {
+	return r.m.WriteUInt8(address, data)
 }
 
-func (r *ROM) WriteWord(address uint16, data uint16) error {
+func (r *ROM) WriteUInt16(address uint16, data uint16) error {
 	hiByte := (uint8)((data >> 8) & 0xff)
 	loByte := (uint8)(data & 0xff)
 
-	if err := r.WriteByte(address, loByte); err != nil {
+	if err := r.WriteUInt8(address, loByte); err != nil {
 		return err
 	}
 
-	if err := r.WriteByte(address+1, hiByte); err != nil {
+	if err := r.WriteUInt8(address+1, hiByte); err != nil {
 		return err
 	}
 

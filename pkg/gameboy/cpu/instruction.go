@@ -67,7 +67,7 @@ func newInstructionSet() map[uint16]instruction {
 			return 12, nil
 		}),
 		0x12: newInstruction("ld (DE), A", func(cpu *CPU) (int, error) {
-			if err := cpu.bus.WriteByte(cpu.regs.DE(), cpu.regs.A); err != nil {
+			if err := cpu.bus.WriteUInt8(cpu.regs.DE(), cpu.regs.A); err != nil {
 				return 0, err
 			}
 			return 8, nil
@@ -107,7 +107,7 @@ func newInstructionSet() map[uint16]instruction {
 			return 12, nil
 		}),
 		0x22: newInstruction("ld (HL+), A", func(cpu *CPU) (int, error) {
-			data, err := cpu.bus.ReadByte(cpu.regs.HL())
+			data, err := cpu.bus.ReadUInt8(cpu.regs.HL())
 			if err != nil {
 				return 0, err
 			}
@@ -116,7 +116,7 @@ func newInstructionSet() map[uint16]instruction {
 			return 8, nil
 		}),
 		0x2a: newInstruction("ld A, (HL+)", func(cpu *CPU) (int, error) {
-			if err := cpu.bus.WriteByte(cpu.regs.HL(), cpu.regs.A); err != nil {
+			if err := cpu.bus.WriteUInt8(cpu.regs.HL(), cpu.regs.A); err != nil {
 				return 0, err
 			}
 			cpu.regs.SetHL(cpu.regs.HL() + 1)
@@ -159,7 +159,7 @@ func newInstructionSet() map[uint16]instruction {
 			return 16, nil
 		}),
 		0xc9: newInstruction("ret", func(cpu *CPU) (int, error) {
-			address, err := cpu.bus.ReadWord(cpu.regs.SP)
+			address, err := cpu.bus.ReadUInt16(cpu.regs.SP)
 			if err != nil {
 				return 0, err
 			}
@@ -173,7 +173,7 @@ func newInstructionSet() map[uint16]instruction {
 			if err != nil {
 				return 0, err
 			}
-			if err := cpu.bus.WriteWord(cpu.regs.SP, cpu.regs.PC); err != nil {
+			if err := cpu.bus.WriteUInt16(cpu.regs.SP, cpu.regs.PC); err != nil {
 				return 0, err
 			}
 			cpu.regs.PC = address
@@ -185,7 +185,7 @@ func newInstructionSet() map[uint16]instruction {
 				return 0, err
 			}
 
-			if err := cpu.bus.WriteByte(0xff00+(uint16)(offset), cpu.regs.A); err != nil {
+			if err := cpu.bus.WriteUInt8(0xff00+(uint16)(offset), cpu.regs.A); err != nil {
 				return 0, err
 			}
 
@@ -197,7 +197,7 @@ func newInstructionSet() map[uint16]instruction {
 				return 0, err
 			}
 
-			data, err := cpu.bus.ReadByte(0xff00 + (uint16)(offset))
+			data, err := cpu.bus.ReadUInt8(0xff00 + (uint16)(offset))
 			if err != nil {
 				return 0, err
 			}
@@ -221,7 +221,7 @@ func newInstructionSet() map[uint16]instruction {
 }
 
 func (c *CPU) readOperandByte() (uint8, error) {
-	data, err := c.bus.ReadByte(c.regs.PC)
+	data, err := c.bus.ReadUInt8(c.regs.PC)
 	if err != nil {
 		return 0, err
 	}
@@ -230,7 +230,7 @@ func (c *CPU) readOperandByte() (uint8, error) {
 }
 
 func (c *CPU) readOperandWord() (uint16, error) {
-	data, err := c.bus.ReadWord(c.regs.PC)
+	data, err := c.bus.ReadUInt16(c.regs.PC)
 	if err != nil {
 		return 0, err
 	}

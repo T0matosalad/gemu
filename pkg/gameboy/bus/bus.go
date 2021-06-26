@@ -2,6 +2,8 @@ package bus
 
 import (
 	"fmt"
+
+	"github.com/d2verb/gemu/pkg/log"
 )
 
 type Bus struct {
@@ -24,36 +26,36 @@ func (b *Bus) Map(targetRange AddressRange, device Addressable) error {
 	return nil
 }
 
-func (b *Bus) Read8(address uint16) (uint8, error) {
+func (b *Bus) Read8(address uint16) uint8 {
 	device, err := b.findDeviceFromAddress(address)
 	if err != nil {
-		return 0, err
+		log.Fatalf("%s", err.Error())
 	}
 	return device.Read8(address)
 }
 
-func (b *Bus) Read16(address uint16) (uint16, error) {
+func (b *Bus) Read16(address uint16) uint16 {
 	device, err := b.findDeviceFromAddress(address)
 	if err != nil {
-		return 0, err
+		log.Fatalf("%s", err.Error())
 	}
 	return device.Read16(address)
 }
 
-func (b *Bus) Write8(address uint16, data uint8) error {
+func (b *Bus) Write8(address uint16, data uint8) {
 	device, err := b.findDeviceFromAddress(address)
 	if err != nil {
-		return err
+		log.Fatalf("%s", err.Error())
 	}
-	return device.Write8(address, data)
+	device.Write8(address, data)
 }
 
-func (b *Bus) Write16(address uint16, data uint16) error {
+func (b *Bus) Write16(address uint16, data uint16) {
 	device, err := b.findDeviceFromAddress(address)
 	if err != nil {
-		return err
+		log.Fatalf("%s", err.Error())
 	}
-	return device.Write16(address, data)
+	device.Write16(address, data)
 }
 
 func (b *Bus) findDeviceFromAddress(address uint16) (Addressable, error) {

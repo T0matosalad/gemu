@@ -1,7 +1,7 @@
 package ram
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/d2verb/gemu/pkg/gameboy/bus"
 )
@@ -39,83 +39,53 @@ func (r *RAM) ConnectToBus(b *bus.Bus) error {
 	return nil
 }
 
-func (r *RAM) Read8(address uint16) (uint8, error) {
+func (r *RAM) Read8(address uint16) uint8 {
 	if r.vramRange.Contains(address) {
 		offset := address - r.vramRange.Start
-		return r.ram[offset], nil
-	}
-
-	if r.wramRange.Contains(address) {
+		return r.ram[offset]
+	} else if r.wramRange.Contains(address) {
 		offset := address - r.wramRange.Start + 0x2000
-		return r.ram[offset], nil
-	}
-
-	if r.eramRange.Contains(address) {
+		return r.ram[offset]
+	} else if r.eramRange.Contains(address) {
 		offset := address - r.eramRange.Start
-		return r.ram[offset], nil
-	}
-
-	if r.hramRange.Contains(address) {
+		return r.ram[offset]
+	} else if r.hramRange.Contains(address) {
 		offset := address - r.hramRange.Start + 0x4000
-		return r.ram[offset], nil
+		return r.ram[offset]
+	} else {
+		log.Fatalf("RAM cannot be accessed at 0x%04x", address)
 	}
-
-	return 0, fmt.Errorf("RAM cannot be accessed at 0x%04x", address)
+	return 0
 }
 
-func (r *RAM) Read16(address uint16) (uint16, error) {
-	loByte, err := r.Read8(address)
-	if err != nil {
-		return 0, err
-	}
-
-	hiByte, err := r.Read8(address + 1)
-	if err != nil {
-		return 0, err
-	}
-
-	return ((uint16)(hiByte)<<8 | (uint16)(loByte)), nil
+func (r *RAM) Read16(address uint16) uint16 {
+	loByte := r.Read8(address)
+	hiByte := r.Read8(address + 1)
+	return ((uint16)(hiByte)<<8 | (uint16)(loByte))
 }
 
-func (r *RAM) Write8(address uint16, data uint8) error {
+func (r *RAM) Write8(address uint16, data uint8) {
 	if r.vramRange.Contains(address) {
 		offset := address - r.vramRange.Start
 		r.ram[offset] = data
-		return nil
-	}
-
-	if r.wramRange.Contains(address) {
+	} else if r.wramRange.Contains(address) {
 		offset := address - r.wramRange.Start + 0x2000
 		r.ram[offset] = data
-		return nil
-	}
-
-	if r.eramRange.Contains(address) {
+	} else if r.eramRange.Contains(address) {
 		offset := address - r.eramRange.Start
 		r.ram[offset] = data
-		return nil
-	}
-
-	if r.hramRange.Contains(address) {
+	} else if r.hramRange.Contains(address) {
 		offset := address - r.hramRange.Start + 0x4000
 		r.ram[offset] = data
-		return nil
+	} else {
+		log.Fatalf("RAM cannot be accessed at 0x%04x", address)
 	}
-
-	return fmt.Errorf("RAM cannot be accessed at 0x%04x", address)
 }
 
-func (r *RAM) Write16(address uint16, data uint16) error {
+func (r *RAM) Write16(address uint16, data uint16) {
 	hiByte := (uint8)((data >> 8) & 0xff)
 	loByte := (uint8)(data & 0xff)
 
-	if err := r.Write8(address, loByte); err != nil {
-		return err
-	}
-
-	if err := r.Write8(address+1, hiByte); err != nil {
-		return err
-	}
-
-	return nil
+	r.Write8(address, loByte)
+	r.Write8(address+1, hiByte)
 }

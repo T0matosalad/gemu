@@ -1,7 +1,7 @@
 package rom
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/d2verb/gemu/pkg/gameboy/bus"
 )
@@ -28,21 +28,21 @@ func (m *MBC0) Data() []uint8 {
 	return m.data
 }
 
-func (m *MBC0) Read8(address uint16) (uint8, error) {
+func (m *MBC0) Read8(address uint16) uint8 {
 	if m.bankRange.Contains(address) {
 		offset := address - m.bankRange.Start
-		return m.data[offset], nil
+		return m.data[offset]
+	} else {
+		log.Fatalf("ROM cannot be accessed at 0x%04x", address)
 	}
-
-	return 0, fmt.Errorf("ROM cannot be accessed at 0x%04x", address)
+	return 0
 }
 
-func (m *MBC0) Write8(address uint16, data uint8) error {
+func (m *MBC0) Write8(address uint16, data uint8) {
 	if m.bankRange.Contains(address) {
 		offset := address - m.bankRange.Start
 		m.data[offset] = data
-		return nil
+	} else {
+		log.Fatalf("ROM cannot be accessed at 0x%04x", address)
 	}
-
-	return fmt.Errorf("ROM cannot be accessed at 0x%04x", address)
 }

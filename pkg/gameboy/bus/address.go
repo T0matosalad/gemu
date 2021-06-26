@@ -3,10 +3,10 @@ package bus
 import "fmt"
 
 type Addressable interface {
-	Read8(uint16) (uint8, error)
-	Read16(uint16) (uint16, error)
-	Write8(uint16, uint8) error
-	Write16(uint16, uint16) error
+	Read8(uint16) uint8
+	Read16(uint16) uint16
+	Write8(uint16, uint8)
+	Write16(uint16, uint16)
 	ConnectToBus(bus *Bus) error
 }
 

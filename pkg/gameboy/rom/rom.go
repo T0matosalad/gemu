@@ -47,39 +47,24 @@ func (r *ROM) ConnectToBus(b *bus.Bus) error {
 	return nil
 }
 
-func (r *ROM) Read8(address uint16) (uint8, error) {
+func (r *ROM) Read8(address uint16) uint8 {
 	return r.m.Read8(address)
 }
 
-func (r *ROM) Read16(address uint16) (uint16, error) {
-	loByte, err := r.Read8(address)
-	if err != nil {
-		return 0, err
-	}
-
-	hiByte, err := r.Read8(address + 1)
-	if err != nil {
-		return 0, err
-	}
-
-	return ((uint16)(hiByte)<<8 | (uint16)(loByte)), nil
+func (r *ROM) Read16(address uint16) uint16 {
+	loByte := r.Read8(address)
+	hiByte := r.Read8(address + 1)
+	return ((uint16)(hiByte)<<8 | (uint16)(loByte))
 }
 
-func (r *ROM) Write8(address uint16, data uint8) error {
-	return r.m.Write8(address, data)
+func (r *ROM) Write8(address uint16, data uint8) {
+	r.m.Write8(address, data)
 }
 
-func (r *ROM) Write16(address uint16, data uint16) error {
+func (r *ROM) Write16(address uint16, data uint16) {
 	hiByte := (uint8)((data >> 8) & 0xff)
 	loByte := (uint8)(data & 0xff)
 
-	if err := r.Write8(address, loByte); err != nil {
-		return err
-	}
-
-	if err := r.Write8(address+1, hiByte); err != nil {
-		return err
-	}
-
-	return nil
+	r.Write8(address, loByte)
+	r.Write8(address+1, hiByte)
 }

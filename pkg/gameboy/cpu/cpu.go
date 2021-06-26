@@ -1,8 +1,6 @@
 package cpu
 
 import (
-	"fmt"
-
 	"github.com/d2verb/gemu/pkg/gameboy/bus"
 	"github.com/d2verb/gemu/pkg/log"
 )
@@ -47,105 +45,85 @@ func (c *CPU) ConnectToBus(b *bus.Bus) error {
 	return nil
 }
 
-func (c *CPU) Step() (int, error) {
+func (c *CPU) Step() int {
 	if c.halt {
-		return 4, nil
+		return 4
 	}
 
 	instAddr := c.regs.PC
 
 	// Fetch opcode
-	opcode, err := c.fetch()
-	if err != nil {
-		return 0, err
-	}
-
+	opcode := c.fetch()
 	instruction, ok := c.instructionSet[opcode]
 	if !ok {
-		return 0, fmt.Errorf("Unknown opcode 0x%x (PC: 0x%04x)", opcode, instAddr)
+		log.Fatalf("Unknown opcode 0x%x (PC: 0x%04x)", opcode, instAddr)
 	}
 
 	log.Verbosef("(cpu) [0x%04x]: %s\n", instAddr, instruction.mnemonic)
 
 	// Execute instruction
-	cycles, err := instruction.handler(c)
-	if err != nil {
-		return 0, err
-	}
+	cycles := instruction.handler(c)
 
 	// Handle interrupts
 	if c.ime {
-		cyclesForInterrupts, err := c.handleInterrupts()
-		if err != nil {
-			return cycles, err
-		}
-		cycles += cyclesForInterrupts
+		cycles += c.handleInterrupts()
 	}
 
-	return cycles, nil
+	return cycles
 }
 
-func (c *CPU) fetch() (uint16, error) {
-	opcode, err := c.bus.Read8(c.regs.PC)
-	if err != nil {
-		return 0, err
-	}
+func (c *CPU) fetch() uint16 {
+	opcode := c.bus.Read8(c.regs.PC)
 	c.regs.PC++
-	return (uint16)(opcode), nil
+	return (uint16)(opcode)
 }
 
-func (c *CPU) Read8(address uint16) (uint8, error) {
+func (c *CPU) Read8(address uint16) uint8 {
 	switch address {
 	case 0xff0f:
-		return c._if, nil
+		return c._if
 	case 0xffff:
-		return c.ie, nil
+		return c.ie
 	default:
-		return 0, fmt.Errorf("CPU cannot be accessed at 0x%04x", address)
+		log.Fatalf("CPU cannot be accessed at 0x%04x", address)
 	}
+	return 0
 }
 
-func (c *CPU) Write8(address uint16, data uint8) error {
+func (c *CPU) Write8(address uint16, data uint8) {
 	switch address {
 	case 0xff0f:
 		c._if = data
-		return nil
 	case 0xffff:
 		c.ie = data
-		return nil
 	default:
-		return fmt.Errorf("CPU cannot be accessed at 0x%04x", address)
+		log.Fatalf("CPU cannot be accessed at 0x%04x", address)
 	}
 }
 
-func (c *CPU) Read16(address uint16) (uint16, error) {
-	return 0, fmt.Errorf("CPU cannot be accessed at 0x%04x", address+1)
+func (c *CPU) Read16(address uint16) uint16 {
+	log.Fatalf("CPU cannot be accessed at 0x%04x", address+1)
+	return 0
 }
 
-func (c *CPU) Write16(address uint16, data uint16) error {
-	return fmt.Errorf("CPU cannot be accessed at 0x%04x", address+1)
+func (c *CPU) Write16(address uint16, data uint16) {
+	log.Fatalf("CPU cannot be accessed at 0x%04x", address+1)
 }
 
-func (c *CPU) handleInterrupts() (int, error) {
+func (c *CPU) handleInterrupts() int {
 	filteredFlags := c.ie & c._if
 	accumulatedCycles := 0
 	for i := 0; i < intSentinel; i++ {
 		if filteredFlags&(1<<i) == 0 {
 			continue
 		}
-		cycles, err := c.handleInterrupt(1 << i)
-		if err != nil {
-			return accumulatedCycles, err
-		}
-		accumulatedCycles += cycles
+		accumulatedCycles += c.handleInterrupt(1 << i)
 	}
-	return accumulatedCycles, nil
+	return accumulatedCycles
 }
 
-func (c *CPU) handleInterrupt(flag uint8) (int, error) {
-	if err := c.bus.ClearIF(flag); err != nil {
-		return 0, err
-	}
+func (c *CPU) handleInterrupt(flag uint8) int {
+	c.bus.ClearIF(flag)
 
 	flagToAddress := map[uint8]uint16{
 		IntVBlank: 0x40,
@@ -160,32 +138,25 @@ func (c *CPU) handleInterrupt(flag uint8) (int, error) {
 	return c.callISR(address)
 }
 
-func (c *CPU) callISR(address uint16) (int, error) {
+func (c *CPU) callISR(address uint16) int {
 	c.ime = false
 
 	// Save current PC to the stack as a return address
 	c.regs.SP = c.regs.SP - 2
-	if err := c.bus.Write16(c.regs.SP, c.regs.PC); err != nil {
-		return 0, err
-	}
+	c.bus.Write16(c.regs.SP, c.regs.PC)
 
 	// Jump to the ISR
 	c.regs.PC = address
 
-	return 12, nil
+	return 12
 }
 
-func (c *CPU) retISR() (int, error) {
+func (c *CPU) retISR() int {
 	c.ime = true
 
 	// Get return address from stack adn set it to PC
-	data, err := c.bus.Read16(c.regs.SP)
-	if err != nil {
-		return 0, err
-	}
-	c.regs.PC = data
-
+	c.regs.PC = c.bus.Read16(c.regs.SP)
 	c.regs.SP = c.regs.SP + 2
 
-	return 12, nil
+	return 12
 }

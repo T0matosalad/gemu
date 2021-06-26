@@ -1,7 +1,7 @@
 package ppu
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/d2verb/gemu/pkg/gameboy/bus"
 	"github.com/d2verb/gemu/pkg/gameboy/cpu"
@@ -31,7 +31,7 @@ func New(l *lcd.LCD) *PPU {
 	}
 }
 
-func (p *PPU) Step(cycles int) error {
+func (p *PPU) Step(cycles int) {
 	p.cycles += cycles
 
 	if p.cycles < CyclesPerScanLine && p.LY() < lcd.ScreenHeight {
@@ -39,9 +39,7 @@ func (p *PPU) Step(cycles int) error {
 			// OAM Search
 		} else if p.cycles < 252 {
 			// Pixel Transfer
-			if err := p.buildBackground(); err != nil {
-				return err
-			}
+			p.buildBackground()
 		} else {
 			// HBlank
 		}
@@ -56,8 +54,6 @@ func (p *PPU) Step(cycles int) error {
 	if p.cycles >= CyclesPerScanLine {
 		p.cycles -= CyclesPerScanLine
 	}
-
-	return nil
 }
 
 func (p *PPU) ConnectToBus(b *bus.Bus) error {
@@ -71,80 +67,53 @@ func (p *PPU) ConnectToBus(b *bus.Bus) error {
 	return nil
 }
 
-func (p *PPU) Read8(address uint16) (uint8, error) {
+func (p *PPU) Read8(address uint16) uint8 {
 	if p.ioRange.Contains(address) {
 		offset := address - p.ioRange.Start
-		return p.ioRegs[offset], nil
-	}
-
-	if p.oamRange.Contains(address) {
+		return p.ioRegs[offset]
+	} else if p.oamRange.Contains(address) {
 		offset := address - p.oamRange.Start
-		return p.oam[offset], nil
+		return p.oam[offset]
+	} else {
+		log.Fatalf("PPU cannot be accessed at 0x%04x", address)
 	}
-
-	return 0, fmt.Errorf("PPU cannot be accessed at 0x%04x", address)
+	return 0
 }
 
-func (p *PPU) Read16(address uint16) (uint16, error) {
-	loByte, err := p.Read8(address)
-	if err != nil {
-		return 0, err
-	}
-
-	hiByte, err := p.Read8(address + 1)
-	if err != nil {
-		return 0, err
-	}
-
-	return ((uint16)(hiByte)<<8 | (uint16)(loByte)), nil
+func (p *PPU) Read16(address uint16) uint16 {
+	loByte := p.Read8(address)
+	hiByte := p.Read8(address + 1)
+	return ((uint16)(hiByte)<<8 | (uint16)(loByte))
 }
 
-func (p *PPU) Write8(address uint16, data uint8) error {
+func (p *PPU) Write8(address uint16, data uint8) {
 	if p.ioRange.Contains(address) {
 		offset := address - p.ioRange.Start
 		p.ioRegs[offset] = data
-		return nil
-	}
-
-	if p.oamRange.Contains(address) {
+	} else if p.oamRange.Contains(address) {
 		offset := address - p.oamRange.Start
 		p.oam[offset] = data
-		return nil
+	} else {
+		log.Fatalf("PPU cannot be accessed at 0x%04x", address)
 	}
-
-	return fmt.Errorf("PPU cannot be accessed at 0x%04x", address)
 }
 
-func (p *PPU) Write16(address uint16, data uint16) error {
+func (p *PPU) Write16(address uint16, data uint16) {
 	hiByte := (uint8)((data >> 8) & 0xff)
 	loByte := (uint8)(data & 0xff)
 
-	if err := p.Write8(address, loByte); err != nil {
-		return err
-	}
-
-	if err := p.Write8(address+1, hiByte); err != nil {
-		return err
-	}
-
-	return nil
+	p.Write8(address, loByte)
+	p.Write8(address+1, hiByte)
 }
 
-func (p *PPU) buildBackground() error {
+func (p *PPU) buildBackground() {
 	var x uint8 = 0
 	for ; x < lcd.ScreenWidth; x++ {
 		tileX := uint16(((x + p.SCX()) / 8) % 32)
 		tileY := uint16(((p.LY() + p.SCY()) / 8) % 32)
 
-		tileID, err := p.BGMap(tileY*32 + tileX)
-		if err != nil {
-			return err
-		}
-
-		rawTileData, err := p.BGTiles(tileID)
-		if err != nil {
-			return err
-		}
+		tileID := p.BGMap(tileY*32 + tileX)
+		rawTileData := p.BGTiles(tileID)
 
 		tile := p.constructTile(rawTileData)
 		offsetX := x - x/8*8
@@ -154,7 +123,6 @@ func (p *PPU) buildBackground() error {
 		p.l.Screen[p.LY()][x] = tile[offsetY][offsetX] * 60
 		p.l.Unlock()
 	}
-	return nil
 }
 
 func (p *PPU) constructTile(rawTileData [16]uint8) [8][8]uint8 {
@@ -183,26 +151,22 @@ func (p *PPU) BGColor(paletteID uint8) uint8 {
 	return (p.BGP() & mask >> (paletteID * 2)) & 0b11
 }
 
-func (p *PPU) BGTiles(tileID uint8) ([16]uint8, error) {
+func (p *PPU) BGTiles(tileID uint8) [16]uint8 {
 	var baseAddress uint16 = 0x8800
 	if p.LCDC()&(1<<4) != 0 {
 		baseAddress = 0x8000
 	}
 	baseAddress += uint16(tileID) * 16
 
-	rawTileData := [16]uint8{}
+	rawTile := [16]uint8{}
 	for i := 0; i < 16; i++ {
-		data, err := p.bus.Read8(baseAddress + uint16(i))
-		if err != nil {
-			return rawTileData, err
-		}
-		rawTileData[i] = data
+		rawTile[i] = p.bus.Read8(baseAddress + uint16(i))
 	}
 
-	return rawTileData, nil
+	return rawTile
 }
 
-func (p *PPU) BGMap(offset uint16) (uint8, error) {
+func (p *PPU) BGMap(offset uint16) uint8 {
 	var baseAddress uint16 = 0x9800
 	if p.LCDC()&(1<<3) != 0 {
 		baseAddress = 0x9c00

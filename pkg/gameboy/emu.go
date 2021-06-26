@@ -57,19 +57,8 @@ func (g *GameBoy) start(ctx context.Context, cancel context.CancelFunc) {
 		case <-ctx.Done():
 			return
 		default:
-			cycles, err := g.c.Step()
-			if err != nil {
-				log.Errorf("%s\n", err)
-				cancel()
-				return
-			}
-
-			err = g.p.Step(cycles)
-			if err != nil {
-				log.Errorf("%s\n", err)
-				cancel()
-				return
-			}
+			cycles := g.c.Step()
+			g.p.Step(cycles)
 
 			// Ensure that the CPU only runs cpu.Hz cycles per second
 			accumulatedCycles += cycles

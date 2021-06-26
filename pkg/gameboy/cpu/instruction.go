@@ -217,6 +217,10 @@ func newInstructionSet() map[uint16]instruction {
 			cpu.ime = false
 			return 4, nil
 		}),
+		0xfb: newInstruction("ei", func(cpu *CPU) (int, error) {
+			cpu.ime = true
+			return 4, nil
+		}),
 	}
 }
 

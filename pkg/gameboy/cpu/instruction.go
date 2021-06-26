@@ -158,34 +158,30 @@ func (c *CPU) operand16() uint16 {
 	return data
 }
 
-// [TODO] update HFlag
 func (c *CPU) add8(a uint8, b uint8, updateCFlag bool) uint8 {
 	result := a + b
 
 	c.regs.SetFlag(NFlag, false)
 	c.regs.SetFlag(ZFlag, result == 0)
+	c.regs.SetFlag(HFlag, (a&0xf)+(b&0xf) > 0xf)
 
-	if !updateCFlag {
-		return result
+	if updateCFlag {
+		c.regs.SetFlag(CFlag, result <= a)
 	}
-
-	c.regs.SetFlag(CFlag, a+b <= a)
 
 	return result
 }
 
-// [TODO] update HFlag
 func (c *CPU) sub8(a uint8, b uint8, updateCFlag bool) uint8 {
 	result := a - b
 
 	c.regs.SetFlag(NFlag, true)
 	c.regs.SetFlag(ZFlag, result == 0)
+	c.regs.SetFlag(HFlag, (a&0xf) < (b&0xf))
 
-	if !updateCFlag {
-		return result
+	if updateCFlag {
+		c.regs.SetFlag(CFlag, a < b)
 	}
-
-	c.regs.SetFlag(CFlag, a < b)
 
 	return result
 }
@@ -193,7 +189,7 @@ func (c *CPU) sub8(a uint8, b uint8, updateCFlag bool) uint8 {
 // Example: 0b1111_1010 to 0b1111_1111_1111_1010
 func signExtU8ToU16(from uint8) uint16 {
 	to := (uint16)(from)
-	if (from & 0b10000000) != 0 {
+	if (from & 0b1000_0000) != 0 {
 		to |= 0xff00
 	}
 	return to

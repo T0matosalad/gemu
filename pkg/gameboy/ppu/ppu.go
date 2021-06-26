@@ -152,7 +152,7 @@ func (p *PPU) BGColor(paletteID uint8) uint8 {
 
 func (p *PPU) BGTiles(tileID uint8) [16]uint8 {
 	var baseAddress uint16 = 0x8800
-	if p.LCDC()&(1<<4) != 0 {
+	if (p.LCDC() & (1 << 4)) != 0 {
 		baseAddress = 0x8000
 	}
 	baseAddress += uint16(tileID) * 16
@@ -167,7 +167,7 @@ func (p *PPU) BGTiles(tileID uint8) [16]uint8 {
 
 func (p *PPU) BGMap(offset uint16) uint8 {
 	var baseAddress uint16 = 0x9800
-	if p.LCDC()&(1<<3) != 0 {
+	if (p.LCDC() & (1 << 3)) != 0 {
 		baseAddress = 0x9c00
 	}
 	return p.bus.Read8(baseAddress + offset)

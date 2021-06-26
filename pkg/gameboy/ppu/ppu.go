@@ -119,7 +119,7 @@ func (p *PPU) buildBackground() {
 		offsetY := p.LY() - p.LY()/8*8
 
 		p.l.Lock()
-		p.l.Screen[p.LY()][x] = tile[offsetY][offsetX] * 60
+		p.l.Screen[p.LY()][x] = tile[offsetY][offsetX] * 85
 		p.l.Unlock()
 	}
 }
@@ -127,18 +127,15 @@ func (p *PPU) buildBackground() {
 func (p *PPU) constructTile(rawTileData [16]uint8) [8][8]uint8 {
 	tile := [8][8]uint8{}
 
-	for i := 0; i < 16; i += 2 {
-		loLine := rawTileData[i]
-		hiLine := rawTileData[i+1]
+	for i := 0; i < 8; i++ {
+		loLine := rawTileData[i*2]
+		hiLine := rawTileData[i*2+1]
 
 		for j := 0; j < 8; j++ {
 			paletteID := (hiLine >> j) & 1
 			paletteID = (paletteID << 1) | ((loLine >> j) & 1)
 
-			x := 7 - j
-			y := i / 2
-
-			tile[y][x] = p.BGColor(paletteID)
+			tile[i][7-j] = p.BGColor(paletteID)
 		}
 	}
 
@@ -147,7 +144,7 @@ func (p *PPU) constructTile(rawTileData [16]uint8) [8][8]uint8 {
 
 func (p *PPU) BGColor(paletteID uint8) uint8 {
 	var mask uint8 = 0b11 << (paletteID * 2)
-	return (p.BGP() & mask >> (paletteID * 2)) & 0b11
+	return ((p.BGP() & mask) >> (paletteID * 2)) & 0b11
 }
 
 func (p *PPU) BGTiles(tileID uint8) [16]uint8 {

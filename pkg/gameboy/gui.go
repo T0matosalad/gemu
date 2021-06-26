@@ -45,7 +45,9 @@ func (g *GUI) start(ctx context.Context, cancel context.CancelFunc) {
 				g.l.Unlock()
 
 				g.win.SetContent(canvas.NewRasterWithPixels(func(x, y, w, h int) color.Color {
-					return color.Gray{Y: screen[y/g.ratio][x/g.ratio]}
+					actualX := x * lcd.ScreenWidth / w
+					actualY := y * lcd.ScreenHeight / h
+					return color.Gray{Y: screen[actualY][actualX]}
 				}))
 			case <-ctx.Done():
 				g.app.Quit()

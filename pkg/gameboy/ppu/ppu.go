@@ -39,7 +39,9 @@ func (p *PPU) Step(cycles int) error {
 			// OAM Search
 		} else if p.cycles < 252 {
 			// Pixel Transfer
-			p.buildBackground()
+			if err := p.buildBackground(); err != nil {
+				return err
+			}
 		} else {
 			// HBlank
 		}
@@ -48,9 +50,13 @@ func (p *PPU) Step(cycles int) error {
 	p.SetLY((p.LY() + 1) % (lcd.ScreenHeight + VBlankLines))
 	if p.LY() == lcd.ScreenHeight {
 		p.bus.SetIF(cpu.IntVBlank)
+		p.l.Updated <- nil
 	}
 
-	p.cycles -= CyclesPerScanLine
+	if p.cycles >= CyclesPerScanLine {
+		p.cycles -= CyclesPerScanLine
+	}
+
 	return nil
 }
 
@@ -145,7 +151,7 @@ func (p *PPU) buildBackground() error {
 		offsetY := p.LY() - p.LY()/8*8
 
 		p.l.Lock()
-		p.l.Screen[p.LY()][x] = tile[offsetY][offsetX]
+		p.l.Screen[p.LY()][x] = tile[offsetY][offsetX] * 60
 		p.l.Unlock()
 	}
 	return nil

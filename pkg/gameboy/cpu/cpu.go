@@ -9,6 +9,14 @@ import (
 
 const Hz = 4194304
 
+const (
+	IntVBlank = 1 << 0
+	IntLCD    = 1 << 1
+	IntTimer  = 1 << 2
+	IntSerial = 1 << 3
+	IntJoypad = 1 << 4
+)
+
 type CPU struct {
 	regs           Registers
 	ime            bool  // Interrupt Master Enable Flag

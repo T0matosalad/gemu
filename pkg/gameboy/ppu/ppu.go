@@ -111,32 +111,31 @@ func (p *PPU) buildBackground() {
 		tileX := uint16((x + p.SCX()) / 8)
 		tileY := uint16((p.LY() + p.SCY()) / 8)
 
-		tileID := p.BGMap(tileY*32 + tileX)
-		rawTileData := p.BGTiles(tileID)
-
-		tile := p.constructTile(rawTileData)
 		offsetX := x - x/8*8
 		offsetY := p.LY() - p.LY()/8*8
 
+		tileID := p.BGMap(tileY*32 + tileX)
+		rawTileLine := p.BGTile(tileID, offsetY)
+
+		tileLine := p.constructTile(rawTileLine)
+
 		p.l.Lock()
-		p.l.Screen[p.LY()][x] = tile[offsetY][offsetX] * 85
+		p.l.Screen[p.LY()][x] = tileLine[offsetX] * 85
 		p.l.Unlock()
 	}
 }
 
-func (p *PPU) constructTile(rawTileData [16]uint8) [8][8]uint8 {
-	tile := [8][8]uint8{}
+func (p *PPU) constructTile(rawTileLine [2]uint8) [8]uint8 {
+	tile := [8]uint8{}
 
-	for i := 0; i < 8; i++ {
-		loLine := rawTileData[i*2]
-		hiLine := rawTileData[i*2+1]
+	loLine := rawTileLine[0]
+	hiLine := rawTileLine[1]
 
-		for j := 0; j < 8; j++ {
-			paletteID := (hiLine >> j) & 1
-			paletteID = (paletteID << 1) | ((loLine >> j) & 1)
+	for j := 0; j < 8; j++ {
+		paletteID := (hiLine >> j) & 1
+		paletteID = (paletteID << 1) | ((loLine >> j) & 1)
 
-			tile[i][7-j] = p.BGColor(paletteID)
-		}
+		tile[7-j] = p.BGColor(paletteID)
 	}
 
 	return tile
@@ -147,19 +146,17 @@ func (p *PPU) BGColor(paletteID uint8) uint8 {
 	return ((p.BGP() & mask) >> (paletteID * 2)) & 0b11
 }
 
-func (p *PPU) BGTiles(tileID uint8) [16]uint8 {
+func (p *PPU) BGTile(tileID uint8, offsetY uint8) [2]uint8 {
 	var baseAddress uint16 = 0x8800
 	if (p.LCDC() & (1 << 4)) != 0 {
 		baseAddress = 0x8000
 	}
 	baseAddress += uint16(tileID) * 16
 
-	rawTile := [16]uint8{}
-	for i := 0; i < 16; i++ {
-		rawTile[i] = p.bus.Read8(baseAddress + uint16(i))
+	return [2]uint8{
+		p.bus.Read8(baseAddress + uint16(offsetY*2)),
+		p.bus.Read8(baseAddress + uint16(offsetY*2+1)),
 	}
-
-	return rawTile
 }
 
 func (p *PPU) BGMap(offset uint16) uint8 {

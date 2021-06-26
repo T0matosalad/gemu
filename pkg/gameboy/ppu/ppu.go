@@ -1,11 +1,10 @@
 package ppu
 
 import (
-	"log"
-
 	"github.com/d2verb/gemu/pkg/gameboy/bus"
 	"github.com/d2verb/gemu/pkg/gameboy/cpu"
 	"github.com/d2verb/gemu/pkg/gameboy/lcd"
+	"github.com/d2verb/gemu/pkg/log"
 )
 
 const (
@@ -109,8 +108,8 @@ func (p *PPU) Write16(address uint16, data uint16) {
 func (p *PPU) buildBackground() {
 	var x uint8 = 0
 	for ; x < lcd.ScreenWidth; x++ {
-		tileX := uint16(((x + p.SCX()) / 8) % 32)
-		tileY := uint16(((p.LY() + p.SCY()) / 8) % 32)
+		tileX := uint16((x + p.SCX()) / 8)
+		tileY := uint16((p.LY() + p.SCY()) / 8)
 
 		tileID := p.BGMap(tileY*32 + tileX)
 		rawTileData := p.BGTiles(tileID)

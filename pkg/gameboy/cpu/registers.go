@@ -75,10 +75,10 @@ func (r *Registers) Flag(bitPos int) bool {
 	return ((r.F >> bitPos) & 1) == 1
 }
 
-func (r *Registers) SetFlag(bitPos int) {
-	r.F |= (1 << bitPos)
-}
-
-func (r *Registers) UnsetFlag(bitPos int) {
-	r.F &= ^(uint8)(1 << bitPos)
+func (r *Registers) SetFlag(bitPos int, on bool) {
+	if on {
+		r.F |= (1 << bitPos)
+	} else {
+		r.F &= ^(uint8)(1 << bitPos)
+	}
 }

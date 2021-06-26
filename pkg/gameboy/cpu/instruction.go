@@ -99,10 +99,10 @@ func newInstructionSet() map[uint16]instruction {
 		}),
 		0xaf: newInstruction("xor A", func(cpu *CPU) int {
 			cpu.regs.A = 0
-			cpu.regs.UnsetFlag(CFlag)
-			cpu.regs.UnsetFlag(HFlag)
-			cpu.regs.UnsetFlag(NFlag)
-			cpu.regs.SetFlag(ZFlag)
+			cpu.regs.SetFlag(CFlag, false)
+			cpu.regs.SetFlag(HFlag, false)
+			cpu.regs.SetFlag(NFlag, false)
+			cpu.regs.SetFlag(ZFlag, true)
 			return 4
 		}),
 		0xc3: newInstruction("jp a16", func(cpu *CPU) int {
@@ -162,23 +162,14 @@ func (c *CPU) operand16() uint16 {
 func (c *CPU) add8(a uint8, b uint8, updateCFlag bool) uint8 {
 	result := a + b
 
-	c.regs.UnsetFlag(NFlag)
-
-	if result == 0 {
-		c.regs.SetFlag(ZFlag)
-	} else {
-		c.regs.UnsetFlag(ZFlag)
-	}
+	c.regs.SetFlag(NFlag, false)
+	c.regs.SetFlag(ZFlag, result == 0)
 
 	if !updateCFlag {
 		return result
 	}
 
-	if a+b <= a {
-		c.regs.SetFlag(CFlag)
-	} else {
-		c.regs.UnsetFlag(CFlag)
-	}
+	c.regs.SetFlag(CFlag, a+b <= a)
 
 	return result
 }
@@ -187,23 +178,14 @@ func (c *CPU) add8(a uint8, b uint8, updateCFlag bool) uint8 {
 func (c *CPU) sub8(a uint8, b uint8, updateCFlag bool) uint8 {
 	result := a - b
 
-	c.regs.SetFlag(NFlag)
-
-	if result == 0 {
-		c.regs.SetFlag(ZFlag)
-	} else {
-		c.regs.UnsetFlag(ZFlag)
-	}
+	c.regs.SetFlag(NFlag, true)
+	c.regs.SetFlag(ZFlag, result == 0)
 
 	if !updateCFlag {
 		return result
 	}
 
-	if a < b {
-		c.regs.SetFlag(CFlag)
-	} else {
-		c.regs.UnsetFlag(CFlag)
-	}
+	c.regs.SetFlag(CFlag, a < b)
 
 	return result
 }

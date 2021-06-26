@@ -170,12 +170,8 @@ func (p *PPU) BGMap(offset uint16) uint8 {
 	return p.bus.Read8(baseAddress + offset)
 }
 
-func (p *PPU) LY() uint8 {
-	return p.ioRegs[4]
-}
-
-func (p *PPU) SetLY(data uint8) {
-	p.ioRegs[4] = data
+func (p *PPU) LCDC() uint8 {
+	return p.ioRegs[0]
 }
 
 func (p *PPU) SCY() uint8 {
@@ -192,6 +188,14 @@ func (p *PPU) SCX() uint8 {
 
 func (p *PPU) SetSCX(data uint8) {
 	p.ioRegs[3] = data
+}
+
+func (p *PPU) LY() uint8 {
+	return p.ioRegs[4]
+}
+
+func (p *PPU) SetLY(data uint8) {
+	p.ioRegs[4] = data
 }
 
 // BGP - BG Palette Data
@@ -213,8 +217,4 @@ func (p *PPU) BGP() uint8 {
 
 func (p *PPU) SetBGP(data uint8) {
 	p.ioRegs[7] = data
-}
-
-func (p *PPU) LCDC() uint8 {
-	return p.ioRegs[0]
 }

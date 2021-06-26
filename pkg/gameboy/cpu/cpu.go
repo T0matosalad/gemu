@@ -86,7 +86,7 @@ func (c *CPU) Step() (int, error) {
 }
 
 func (c *CPU) fetch() (uint16, error) {
-	opcode, err := c.bus.ReadUInt8(c.regs.PC)
+	opcode, err := c.bus.Read8(c.regs.PC)
 	if err != nil {
 		return 0, err
 	}
@@ -94,7 +94,7 @@ func (c *CPU) fetch() (uint16, error) {
 	return (uint16)(opcode), nil
 }
 
-func (c *CPU) ReadUInt8(address uint16) (uint8, error) {
+func (c *CPU) Read8(address uint16) (uint8, error) {
 	switch address {
 	case 0xff0f:
 		return c._if, nil
@@ -105,7 +105,7 @@ func (c *CPU) ReadUInt8(address uint16) (uint8, error) {
 	}
 }
 
-func (c *CPU) WriteUInt8(address uint16, data uint8) error {
+func (c *CPU) Write8(address uint16, data uint8) error {
 	switch address {
 	case 0xff0f:
 		c._if = data
@@ -118,11 +118,11 @@ func (c *CPU) WriteUInt8(address uint16, data uint8) error {
 	}
 }
 
-func (c *CPU) ReadUInt16(address uint16) (uint16, error) {
+func (c *CPU) Read16(address uint16) (uint16, error) {
 	return 0, fmt.Errorf("CPU cannot be accessed at 0x%04x", address+1)
 }
 
-func (c *CPU) WriteUInt16(address uint16, data uint16) error {
+func (c *CPU) Write16(address uint16, data uint16) error {
 	return fmt.Errorf("CPU cannot be accessed at 0x%04x", address+1)
 }
 
@@ -165,7 +165,7 @@ func (c *CPU) callISR(address uint16) (int, error) {
 
 	// Save current PC to the stack as a return address
 	c.regs.SP = c.regs.SP - 2
-	if err := c.bus.WriteUInt16(c.regs.SP, c.regs.PC); err != nil {
+	if err := c.bus.Write16(c.regs.SP, c.regs.PC); err != nil {
 		return 0, err
 	}
 
@@ -179,7 +179,7 @@ func (c *CPU) retISR() (int, error) {
 	c.ime = true
 
 	// Get return address from stack adn set it to PC
-	data, err := c.bus.ReadUInt16(c.regs.SP)
+	data, err := c.bus.Read16(c.regs.SP)
 	if err != nil {
 		return 0, err
 	}

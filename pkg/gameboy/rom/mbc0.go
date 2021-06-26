@@ -28,7 +28,7 @@ func (m *MBC0) Data() []uint8 {
 	return m.data
 }
 
-func (m *MBC0) ReadUInt8(address uint16) (uint8, error) {
+func (m *MBC0) Read8(address uint16) (uint8, error) {
 	if m.bankRange.Contains(address) {
 		offset := address - m.bankRange.Start
 		return m.data[offset], nil
@@ -37,7 +37,7 @@ func (m *MBC0) ReadUInt8(address uint16) (uint8, error) {
 	return 0, fmt.Errorf("ROM cannot be accessed at 0x%04x", address)
 }
 
-func (m *MBC0) WriteUInt8(address uint16, data uint8) error {
+func (m *MBC0) Write8(address uint16, data uint8) error {
 	if m.bankRange.Contains(address) {
 		offset := address - m.bankRange.Start
 		m.data[offset] = data

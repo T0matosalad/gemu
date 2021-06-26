@@ -71,7 +71,7 @@ func (p *PPU) ConnectToBus(b *bus.Bus) error {
 	return nil
 }
 
-func (p *PPU) ReadUInt8(address uint16) (uint8, error) {
+func (p *PPU) Read8(address uint16) (uint8, error) {
 	if p.ioRange.Contains(address) {
 		offset := address - p.ioRange.Start
 		return p.ioRegs[offset], nil
@@ -85,13 +85,13 @@ func (p *PPU) ReadUInt8(address uint16) (uint8, error) {
 	return 0, fmt.Errorf("PPU cannot be accessed at 0x%04x", address)
 }
 
-func (p *PPU) ReadUInt16(address uint16) (uint16, error) {
-	loByte, err := p.ReadUInt8(address)
+func (p *PPU) Read16(address uint16) (uint16, error) {
+	loByte, err := p.Read8(address)
 	if err != nil {
 		return 0, err
 	}
 
-	hiByte, err := p.ReadUInt8(address + 1)
+	hiByte, err := p.Read8(address + 1)
 	if err != nil {
 		return 0, err
 	}
@@ -99,7 +99,7 @@ func (p *PPU) ReadUInt16(address uint16) (uint16, error) {
 	return ((uint16)(hiByte)<<8 | (uint16)(loByte)), nil
 }
 
-func (p *PPU) WriteUInt8(address uint16, data uint8) error {
+func (p *PPU) Write8(address uint16, data uint8) error {
 	if p.ioRange.Contains(address) {
 		offset := address - p.ioRange.Start
 		p.ioRegs[offset] = data
@@ -115,15 +115,15 @@ func (p *PPU) WriteUInt8(address uint16, data uint8) error {
 	return fmt.Errorf("PPU cannot be accessed at 0x%04x", address)
 }
 
-func (p *PPU) WriteUInt16(address uint16, data uint16) error {
+func (p *PPU) Write16(address uint16, data uint16) error {
 	hiByte := (uint8)((data >> 8) & 0xff)
 	loByte := (uint8)(data & 0xff)
 
-	if err := p.WriteUInt8(address, loByte); err != nil {
+	if err := p.Write8(address, loByte); err != nil {
 		return err
 	}
 
-	if err := p.WriteUInt8(address+1, hiByte); err != nil {
+	if err := p.Write8(address+1, hiByte); err != nil {
 		return err
 	}
 
@@ -192,7 +192,7 @@ func (p *PPU) BGTiles(tileID uint8) ([16]uint8, error) {
 
 	rawTileData := [16]uint8{}
 	for i := 0; i < 16; i++ {
-		data, err := p.bus.ReadUInt8(baseAddress + uint16(i))
+		data, err := p.bus.Read8(baseAddress + uint16(i))
 		if err != nil {
 			return rawTileData, err
 		}
@@ -207,7 +207,7 @@ func (p *PPU) BGMap(offset uint16) (uint8, error) {
 	if p.LCDC()&(1<<3) != 0 {
 		baseAddress = 0x9c00
 	}
-	return p.bus.ReadUInt8(baseAddress + offset)
+	return p.bus.Read8(baseAddress + offset)
 }
 
 func (p *PPU) LY() uint8 {

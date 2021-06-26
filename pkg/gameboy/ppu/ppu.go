@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/d2verb/gemu/pkg/gameboy/bus"
+	"github.com/d2verb/gemu/pkg/gameboy/cpu"
 	"github.com/d2verb/gemu/pkg/gameboy/lcd"
 )
 
@@ -19,6 +20,7 @@ type PPU struct {
 	oamRange bus.AddressRange
 	cycles   int
 	l        *lcd.LCD
+	bus      *bus.Bus
 }
 
 func New(l *lcd.LCD) *PPU {
@@ -34,7 +36,12 @@ func (p *PPU) Step(cycles int) error {
 	if p.cycles < CyclesPerScanLine {
 		return nil
 	}
+
 	p.SetLY((p.LY() + 1) % (lcd.ScreenHeight + VBlankLines))
+	if p.LY() == lcd.ScreenHeight {
+		p.bus.SetIF(cpu.IntVBlank)
+	}
+
 	p.cycles -= CyclesPerScanLine
 	return nil
 }
@@ -46,6 +53,7 @@ func (p *PPU) ConnectToBus(b *bus.Bus) error {
 	if err := b.Map(p.oamRange, p); err != nil {
 		return err
 	}
+	p.bus = b
 	return nil
 }
 

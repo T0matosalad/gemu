@@ -38,7 +38,7 @@ func (p *PPU) Step(cycles int) {
 			// OAM Search
 		} else if p.cycles < 252 {
 			// Pixel Transfer
-			p.buildBackground()
+			p.renderBackground()
 		} else {
 			// HBlank
 		}
@@ -105,27 +105,26 @@ func (p *PPU) Write16(address uint16, data uint16) {
 	p.Write8(address+1, hiByte)
 }
 
-func (p *PPU) buildBackground() {
+func (p *PPU) renderBackground() {
 	var x uint8 = 0
 	for ; x < lcd.ScreenWidth; x++ {
-		tileX := uint16((x + p.SCX()) / 8)
-		tileY := uint16((p.LY() + p.SCY()) / 8)
+		tileNumX := uint16((x + p.SCX()) / 8)
+		tileNumY := uint16((p.LY() + p.SCY()) / 8)
+		tileNum := p.BGMap(tileNumY*32 + tileNumX)
 
-		offsetX := x - x/8*8
-		offsetY := p.LY() - p.LY()/8*8
+		tileOffsetX := x % 8
+		tileOffsetY := p.LY() % 8
 
-		tileID := p.BGMap(tileY*32 + tileX)
-		rawTileLine := p.BGTile(tileID, offsetY)
-
-		tileLine := p.constructTile(rawTileLine)
+		rawTileLine := p.BGTile(tileNum, tileOffsetY)
+		tileLine := p.buildTileLine(rawTileLine)
 
 		p.l.Lock()
-		p.l.Screen[p.LY()][x] = tileLine[offsetX] * 85
+		p.l.Screen[p.LY()][x] = tileLine[tileOffsetX] * 85
 		p.l.Unlock()
 	}
 }
 
-func (p *PPU) constructTile(rawTileLine [2]uint8) [8]uint8 {
+func (p *PPU) buildTileLine(rawTileLine [2]uint8) [8]uint8 {
 	tile := [8]uint8{}
 
 	loLine := rawTileLine[0]

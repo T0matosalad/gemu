@@ -45,34 +45,34 @@ const (
 )
 
 func (r *Registers) HL() uint16 {
-	return (uint16)(r.H)<<8 | (uint16)(r.L)
+	return ((uint16)(r.H) << 8) | (uint16)(r.L)
 }
 
 func (r *Registers) SetHL(data uint16) {
-	r.L = (uint8)(data & 0xff)
 	r.H = (uint8)((data >> 8) & 0xff)
+	r.L = (uint8)(data & 0xff)
 }
 
 func (r *Registers) BC() uint16 {
-	return (uint16)(r.B)<<8 | (uint16)(r.C)
+	return ((uint16)(r.B) << 8) | (uint16)(r.C)
 }
 
 func (r *Registers) SetBC(data uint16) {
-	r.C = (uint8)(data & 0xff)
 	r.B = (uint8)((data >> 8) & 0xff)
+	r.C = (uint8)(data & 0xff)
 }
 
 func (r *Registers) DE() uint16 {
-	return (uint16)(r.B)<<r.D | (uint16)(r.E)
+	return ((uint16)(r.D) << 8) | (uint16)(r.E)
 }
 
 func (r *Registers) SetDE(data uint16) {
-	r.D = (uint8)(data & 0xff)
-	r.E = (uint8)((data >> 8) & 0xff)
+	r.D = (uint8)((data >> 8) & 0xff)
+	r.E = (uint8)(data & 0xff)
 }
 
 func (r *Registers) Flag(bitPos int) bool {
-	return ((r.F >> bitPos) & 1) == 1
+	return (r.F & (1 << bitPos)) != 0
 }
 
 func (r *Registers) SetFlag(bitPos int, on bool) {

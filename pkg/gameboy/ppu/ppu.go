@@ -119,7 +119,7 @@ func (p *PPU) renderBackground() {
 		tileLine := p.buildTileLine(rawTileLine)
 
 		p.l.Lock()
-		p.l.Screen[p.LY()][x] = tileLine[tileOffsetX] * 85
+		p.l.Screen[p.LY()][x] = (255 - tileLine[tileOffsetX]*85)
 		p.l.Unlock()
 	}
 }

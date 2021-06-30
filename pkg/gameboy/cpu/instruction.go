@@ -79,7 +79,7 @@ func newInstructionSet() map[uint16]instruction {
 			return 8
 		}),
 		0x2a: newInstruction("ld A, (HL+)", func(cpu *CPU) int {
-			cpu.bus.Write8(cpu.regs.HL(), cpu.regs.A)
+			cpu.regs.A = cpu.bus.Read8(cpu.regs.HL())
 			cpu.regs.SetHL(cpu.regs.HL() + 1)
 			return 8
 		}),

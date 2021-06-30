@@ -18,8 +18,7 @@ func newInstructionSet() map[uint16]instruction {
 			return 4
 		}),
 		0x01: newInstruction("ld BC, d16", func(cpu *CPU) int {
-			data := cpu.operand16()
-			cpu.regs.SetBC(data)
+			cpu.regs.SetBC(cpu.operand16())
 			return 12
 		}),
 		0x04: newInstruction("inc B", func(cpu *CPU) int {
@@ -59,8 +58,7 @@ func newInstructionSet() map[uint16]instruction {
 			return 8
 		}),
 		0x18: newInstruction("jr r8", func(cpu *CPU) int {
-			data := cpu.operand8()
-			cpu.regs.PC += signExtU8ToU16(data)
+			cpu.regs.PC += signExtU8ToU16(cpu.operand8())
 			return 12
 		}),
 		0x20: newInstruction("jr nz, r8", func(cpu *CPU) int {
@@ -76,7 +74,7 @@ func newInstructionSet() map[uint16]instruction {
 			return 12
 		}),
 		0x22: newInstruction("ld (HL+), A", func(cpu *CPU) int {
-			cpu.regs.A = cpu.bus.Read8(cpu.regs.HL())
+			cpu.bus.Write8(cpu.regs.HL(), cpu.regs.A)
 			cpu.regs.SetHL(cpu.regs.HL() + 1)
 			return 8
 		}),

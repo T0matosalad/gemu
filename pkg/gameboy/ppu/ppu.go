@@ -44,14 +44,14 @@ func (p *PPU) Step(cycles int) {
 		}
 	}
 
-	p.SetLY((p.LY() + 1) % (lcd.ScreenHeight + VBlankLines))
+	if p.cycles >= CyclesPerScanLine {
+		p.SetLY((p.LY() + 1) % (lcd.ScreenHeight + VBlankLines))
+		p.cycles -= CyclesPerScanLine
+	}
+
 	if p.LY() == lcd.ScreenHeight {
 		p.bus.SetIF(cpu.IntVBlank)
 		p.l.Updated <- nil
-	}
-
-	if p.cycles >= CyclesPerScanLine {
-		p.cycles -= CyclesPerScanLine
 	}
 }
 
@@ -98,7 +98,7 @@ func (p *PPU) Write8(address uint16, data uint8) {
 }
 
 func (p *PPU) Write16(address uint16, data uint16) {
-	hiByte := (uint8)((data >> 8) & 0xff)
+	hiByte := (uint8)(data >> 8)
 	loByte := (uint8)(data & 0xff)
 
 	p.Write8(address, loByte)

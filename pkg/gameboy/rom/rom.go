@@ -62,7 +62,7 @@ func (r *ROM) Write8(address uint16, data uint8) {
 }
 
 func (r *ROM) Write16(address uint16, data uint16) {
-	hiByte := (uint8)((data >> 8) & 0xff)
+	hiByte := (uint8)(data >> 8)
 	loByte := (uint8)(data & 0xff)
 
 	r.Write8(address, loByte)

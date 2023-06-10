@@ -4,9 +4,9 @@ import (
 	"context"
 	"image/color"
 
-	"fyne.io/fyne"
-	"fyne.io/fyne/app"
-	"fyne.io/fyne/canvas"
+	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/app"
+	"fyne.io/fyne/v2/canvas"
 	"github.com/d2verb/gemu/pkg/gameboy/lcd"
 )
 
@@ -47,7 +47,8 @@ func (g *GUI) start(ctx context.Context, cancel context.CancelFunc) {
 				g.win.SetContent(canvas.NewRasterWithPixels(func(x, y, w, h int) color.Color {
 					actualX := x * lcd.ScreenWidth / w
 					actualY := y * lcd.ScreenHeight / h
-					return color.Gray{Y: screen[actualY][actualX]}
+					dot := screen[actualY][actualX]
+					return color.RGBA{dot, dot, dot, 0xff}
 				}))
 			case <-ctx.Done():
 				g.app.Quit()
@@ -58,7 +59,7 @@ func (g *GUI) start(ctx context.Context, cancel context.CancelFunc) {
 		}
 	}()
 
-	g.win.Resize(fyne.NewSize(lcd.ScreenWidth*g.ratio, lcd.ScreenHeight*g.ratio))
+	g.win.Resize(fyne.NewSize(float32(lcd.ScreenWidth*g.ratio), float32(lcd.ScreenHeight*g.ratio)))
 	g.win.SetFixedSize(true)
 	g.win.ShowAndRun()
 }

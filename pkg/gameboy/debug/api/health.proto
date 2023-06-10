@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option go_package="github.com/d2verb/gemu/pkg/gameboy/debug";
+
+package debug;
+
+service HealthChecker {
+    rpc Hi (HiRequest) returns (HiReply) {}
+}
+
+message HiRequest {}
+message HiReply {}

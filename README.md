@@ -19,8 +19,11 @@ gemu
 $ gemu -h
 Usage of gemu:
 
-gemu [-v] ROM
-    -v    display version
+gemu [-vrd] ROM
+    -v         display version
+    -r int     magnification ratio of screen (default: 1)
+    -l string  log level {verbose, debug, warn, error, fatal} (default: debug)
+    -d         start debug mode
 ```
 
 # Resources

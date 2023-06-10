@@ -15,16 +15,17 @@ import (
 )
 
 type GameBoy struct {
-	c *cpu.CPU
-	r *rom.ROM
-	a *ram.RAM
-	l *lcd.LCD
-	p *ppu.PPU
-	s *apu.APU
-	b *bus.Bus
+	c         *cpu.CPU
+	r         *rom.ROM
+	a         *ram.RAM
+	l         *lcd.LCD
+	p         *ppu.PPU
+	s         *apu.APU
+	b         *bus.Bus
+	debugMode bool
 }
 
-func newGameBoy(romContent []uint8) (*GameBoy, error) {
+func newGameBoy(romContent []uint8, debugMode bool) (*GameBoy, error) {
 	l := lcd.New()
 
 	r, err := rom.New(romContent)
@@ -33,13 +34,14 @@ func newGameBoy(romContent []uint8) (*GameBoy, error) {
 	}
 
 	g := GameBoy{
-		c: cpu.New(),
-		r: r,
-		a: ram.New(),
-		l: l,
-		p: ppu.New(l),
-		s: apu.New(),
-		b: bus.New(),
+		c:         cpu.New(),
+		r:         r,
+		a:         ram.New(),
+		l:         l,
+		p:         ppu.New(l),
+		s:         apu.New(),
+		b:         bus.New(),
+		debugMode: debugMode,
 	}
 	g.c.ConnectToBus(g.b)
 	g.r.ConnectToBus(g.b)
@@ -61,6 +63,10 @@ func (g *GameBoy) start(ctx context.Context, cancel context.CancelFunc) {
 		case <-ctx.Done():
 			return
 		default:
+			if g.debugMode {
+				// TODO
+			}
+
 			cycles := g.c.Step()
 			g.p.Step(cycles)
 

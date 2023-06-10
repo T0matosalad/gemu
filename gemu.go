@@ -16,7 +16,7 @@ func Run() error {
 
 	v := flag.Bool("v", false, "display version")
 	r := flag.Int("r", 1, "magnification ratio of screen")
-	d := flag.String("d", log.ModeToString(log.DebugMode), "debug level")
+	l := flag.String("l", log.ModeToString(log.DebugMode), "log level")
 	flag.Parse()
 
 	if *v {
@@ -28,7 +28,7 @@ func Run() error {
 		return flag.ErrHelp
 	}
 
-	mode, err := log.StringToMode(*d)
+	mode, err := log.StringToMode(*l)
 	if err != nil {
 		return err
 	}
@@ -43,7 +43,7 @@ func flagUsage() {
 gemu [-vrd] ROM
     -v         display version
     -r int     magnification ratio of screen (default: 1)
-    -d string  debug level {verbose, debug, warn, error, fatal} (default: debug)`
+    -l string  log level {verbose, debug, warn, error, fatal} (default: debug)`
 
 	fmt.Fprintf(os.Stderr, "%s\n", usageText)
 }

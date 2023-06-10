@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/d2verb/gemu/pkg/gameboy/apu"
 	"github.com/d2verb/gemu/pkg/gameboy/bus"
 	"github.com/d2verb/gemu/pkg/gameboy/cpu"
 	"github.com/d2verb/gemu/pkg/gameboy/lcd"
@@ -19,6 +20,7 @@ type GameBoy struct {
 	a *ram.RAM
 	l *lcd.LCD
 	p *ppu.PPU
+	s *apu.APU
 	b *bus.Bus
 }
 
@@ -36,12 +38,14 @@ func newGameBoy(romContent []uint8) (*GameBoy, error) {
 		a: ram.New(),
 		l: l,
 		p: ppu.New(l),
+		s: apu.New(),
 		b: bus.New(),
 	}
 	g.c.ConnectToBus(g.b)
 	g.r.ConnectToBus(g.b)
 	g.a.ConnectToBus(g.b)
 	g.p.ConnectToBus(g.b)
+	g.s.ConnectToBus(g.b)
 
 	return &g, nil
 }

@@ -33,6 +33,10 @@ func newInstructionSet() map[uint16]instruction {
 			cpu.regs.B = cpu.operand8()
 			return 8
 		}),
+		0x0b: newInstruction("dec BC", func(cpu *CPU) int {
+			cpu.regs.SetBC(cpu.regs.BC() - 1)
+			return 8
+		}),
 		0x0c: newInstruction("inc C", func(cpu *CPU) int {
 			cpu.regs.C = cpu.add8(cpu.regs.C, 1, false)
 			return 4
@@ -61,6 +65,10 @@ func newInstructionSet() map[uint16]instruction {
 			cpu.regs.PC += signExtU8ToU16(cpu.operand8())
 			return 12
 		}),
+		0x1a: newInstruction("ld A, (DE)", func(cpu *CPU) int {
+			cpu.regs.A = cpu.bus.Read8(cpu.regs.DE())
+			return 8
+		}),
 		0x20: newInstruction("jr nz, r8", func(cpu *CPU) int {
 			data := cpu.operand8()
 			if cpu.regs.Flag(ZFlag) {
@@ -87,6 +95,14 @@ func newInstructionSet() map[uint16]instruction {
 			cpu.regs.SP = cpu.operand16()
 			return 12
 		}),
+		0x38: newInstruction("jr C, r8", func(cpu *CPU) int {
+			data := cpu.operand8()
+			if cpu.regs.Flag(CFlag) {
+				cpu.regs.PC += signExtU8ToU16(data)
+				return 12
+			}
+			return 8
+		}),
 		0x3e: newInstruction("ld A, d8", func(cpu *CPU) int {
 			cpu.regs.A = cpu.operand8()
 			return 8
@@ -95,12 +111,24 @@ func newInstructionSet() map[uint16]instruction {
 			cpu.halt = true
 			return 4
 		}),
+		0x78: newInstruction("ld A, B", func(cpu *CPU) int {
+			cpu.regs.A = cpu.regs.B
+			return 4
+		}),
 		0xaf: newInstruction("xor A", func(cpu *CPU) int {
 			cpu.regs.A = 0
 			cpu.regs.SetFlag(CFlag, false)
 			cpu.regs.SetFlag(HFlag, false)
 			cpu.regs.SetFlag(NFlag, false)
 			cpu.regs.SetFlag(ZFlag, true)
+			return 4
+		}),
+		0xa7: newInstruction("and A", func(cpu *CPU) int {
+			cpu.regs.A = cpu.and8(cpu.regs.A, cpu.regs.A)
+			return 4
+		}),
+		0xb1: newInstruction("or C", func(cpu *CPU) int {
+			cpu.regs.A = cpu.or8(cpu.regs.A, cpu.regs.C)
 			return 4
 		}),
 		0xc3: newInstruction("jp a16", func(cpu *CPU) int {
@@ -180,6 +208,28 @@ func (c *CPU) sub8(a uint8, b uint8, updateCFlag bool) uint8 {
 	if updateCFlag {
 		c.regs.SetFlag(CFlag, a < b)
 	}
+
+	return result
+}
+
+func (c *CPU) and8(a uint8, b uint8) uint8 {
+	result := a & b
+
+	c.regs.SetFlag(NFlag, false)
+	c.regs.SetFlag(ZFlag, result == 0)
+	c.regs.SetFlag(HFlag, true)
+	c.regs.SetFlag(CFlag, false)
+
+	return result
+}
+
+func (c *CPU) or8(a uint8, b uint8) uint8 {
+	result := a | b
+
+	c.regs.SetFlag(NFlag, false)
+	c.regs.SetFlag(ZFlag, result == 0)
+	c.regs.SetFlag(HFlag, false)
+	c.regs.SetFlag(CFlag, false)
 
 	return result
 }

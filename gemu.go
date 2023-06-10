@@ -43,7 +43,7 @@ func flagUsage() {
 gemu [-vrd] ROM
     -v         display version
     -r int     magnification ratio of screen (default: 1)
-    -d string  debug level {debug, warn, error, fatal} (default: debug)`
+    -d string  debug level {verbose, debug, warn, error, fatal} (default: debug)`
 
 	fmt.Fprintf(os.Stderr, "%s\n", usageText)
 }

@@ -12,6 +12,8 @@ import (
 	"github.com/d2verb/gemu/pkg/gameboy/ram"
 	"github.com/d2verb/gemu/pkg/gameboy/rom"
 	"github.com/d2verb/gemu/pkg/log"
+
+	pb "github.com/d2verb/gemu/pkg/gameboy/debug"
 )
 
 type GameBoy struct {
@@ -22,10 +24,11 @@ type GameBoy struct {
 	p         *ppu.PPU
 	s         *apu.APU
 	b         *bus.Bus
+	ch        chan any
 	debugMode bool
 }
 
-func newGameBoy(romContent []uint8, debugMode bool) (*GameBoy, error) {
+func newGameBoy(romContent []uint8, ch chan any, debugMode bool) (*GameBoy, error) {
 	l := lcd.New()
 
 	r, err := rom.New(romContent)
@@ -41,6 +44,7 @@ func newGameBoy(romContent []uint8, debugMode bool) (*GameBoy, error) {
 		p:         ppu.New(l),
 		s:         apu.New(),
 		b:         bus.New(),
+		ch:        ch,
 		debugMode: debugMode,
 	}
 	g.c.ConnectToBus(g.b)
@@ -64,7 +68,10 @@ func (g *GameBoy) start(ctx context.Context, cancel context.CancelFunc) {
 			return
 		default:
 			if g.debugMode {
-				// TODO
+				runNextEmulatorStep := g.debuggerStep()
+				if !runNextEmulatorStep {
+					continue
+				}
 			}
 
 			cycles := g.c.Step()
@@ -83,6 +90,22 @@ func (g *GameBoy) start(ctx context.Context, cancel context.CancelFunc) {
 			}
 		}
 	}
+}
+
+func (g *GameBoy) debuggerStep() (runNextEmulatorStep bool) {
+	req := <-g.ch
+
+	switch req.(type) {
+	case *pb.NextRequest:
+		g.ch <- pb.NextReply{}
+		runNextEmulatorStep = true
+	default:
+		log.Errorf("Unknown debug request: %T\n", req)
+		g.ch <- struct{}{}
+		runNextEmulatorStep = false
+	}
+
+	return
 }
 
 func NowInMillisecond() int64 {

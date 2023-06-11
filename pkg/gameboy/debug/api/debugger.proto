@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option go_package="github.com/d2verb/gemu/pkg/gameboy/debug";
+
+package debug;
+
+service Debugger {
+    rpc Next (NextRequest) returns (NextReply) {}
+}
+
+message NextRequest {}
+message NextReply {}

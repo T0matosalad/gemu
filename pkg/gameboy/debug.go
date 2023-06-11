@@ -14,19 +14,29 @@ import (
 
 type DebugServer struct {
 	port      int
+	ch        chan any
 	debugMode bool
+
 	pb.UnimplementedHealthCheckerServer
+	pb.UnimplementedDebuggerServer
 }
 
-func newDebugServer(port int, debugMode bool) *DebugServer {
+func newDebugServer(port int, ch chan any, debugMode bool) *DebugServer {
 	return &DebugServer{
 		port:      port,
+		ch:        ch,
 		debugMode: debugMode,
 	}
 }
 
 func (d *DebugServer) Hi(cxt context.Context, req *pb.HiRequest) (*pb.HiReply, error) {
 	return &pb.HiReply{}, nil
+}
+
+func (d *DebugServer) Next(cxt context.Context, req *pb.NextRequest) (*pb.NextReply, error) {
+	d.ch <- req
+	<-d.ch
+	return &pb.NextReply{}, nil
 }
 
 func (d *DebugServer) start(ctx context.Context, cancel context.CancelFunc) {
@@ -44,6 +54,8 @@ func (d *DebugServer) start(ctx context.Context, cancel context.CancelFunc) {
 	s := grpc.NewServer()
 
 	pb.RegisterHealthCheckerServer(s, d)
+	pb.RegisterDebuggerServer(s, d)
+
 	reflection.Register(s)
 
 	if err := s.Serve(l); err != nil {

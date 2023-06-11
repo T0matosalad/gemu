@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	err := gemu.Run()
+	config, err := gemu.SetUp()
 	if err != nil {
 		if err == flag.ErrHelp {
 			flag.Usage()
@@ -18,4 +18,5 @@ func main() {
 		}
 		os.Exit(1)
 	}
+	gemu.Run(config)
 }

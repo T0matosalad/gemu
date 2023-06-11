@@ -15,7 +15,13 @@ import (
 
 const version = "0.0.1"
 
-func Run() error {
+type Config struct {
+	RomPath   string
+	Ratio     int
+	DebugMode bool
+}
+
+func SetUp() (*Config, error) {
 	flag.Usage = flagUsage
 
 	v := flag.Bool("v", false, "display version")
@@ -26,24 +32,28 @@ func Run() error {
 
 	if *v {
 		fmt.Printf("gemu v%s\n", version)
-		return nil
+		return nil, nil
 	}
 
 	if len(flag.Args()) != 1 {
-		return flag.ErrHelp
+		return nil, flag.ErrHelp
 	}
 
 	mode, err := log.StringToMode(*l)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	log.SetMode(mode)
 
-	return Start(flag.Arg(0), *r, *d)
+	return &Config{
+		RomPath:   flag.Arg(0),
+		Ratio:     *r,
+		DebugMode: *d,
+	}, nil
 }
 
-func Start(romPath string, ratio int, debugMode bool) error {
-	romContent, err := ioutil.ReadFile(romPath)
+func Run(config *Config) error {
+	romContent, err := ioutil.ReadFile(config.RomPath)
 	if err != nil {
 		return err
 	}
@@ -53,13 +63,13 @@ func Start(romPath string, ratio int, debugMode bool) error {
 
 	ch := make(chan any)
 
-	gb, err := gameboy.NewGameBoy(romContent, ch, debugMode)
+	gb, err := gameboy.NewGameBoy(romContent, ch, config.DebugMode)
 	if err != nil {
 		return err
 	}
 
-	gui := gui.NewGUI("Gemu", gb.LCD(), ratio)
-	dbg := debug.NewDebugServer(9000, ch, debugMode)
+	gui := gui.NewGUI("Gemu", gb.LCD(), config.Ratio)
+	dbg := debug.NewDebugServer(9000, ch, config.DebugMode)
 
 	go gb.Start(ctx, cancel)
 	go dbg.Start(ctx, cancel)

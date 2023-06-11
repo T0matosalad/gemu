@@ -2,6 +2,8 @@ package gui
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"image/color"
 
 	"fyne.io/fyne/v2"
@@ -11,10 +13,11 @@ import (
 )
 
 type GUI struct {
-	app   fyne.App
-	win   fyne.Window
-	l     *lcd.LCD
-	ratio int
+	app        fyne.App
+	win        fyne.Window
+	l          *lcd.LCD
+	screenHash string
+	ratio      int
 }
 
 func NewGUI(winTitle string, l *lcd.LCD, ratio int) GUI {
@@ -44,6 +47,13 @@ func (g *GUI) Start(ctx context.Context, cancel context.CancelFunc) {
 				}
 				g.l.Unlock()
 
+				// If screen content is the same, skip gui updating
+				screenHash := calcScreenHash(screen)
+				if screenHash == g.screenHash {
+					continue
+				}
+				g.screenHash = screenHash
+
 				g.win.SetContent(canvas.NewRasterWithPixels(func(x, y, w, h int) color.Color {
 					actualX := x * lcd.ScreenWidth / w
 					actualY := y * lcd.ScreenHeight / h
@@ -62,4 +72,12 @@ func (g *GUI) Start(ctx context.Context, cancel context.CancelFunc) {
 	g.win.Resize(fyne.NewSize(float32(lcd.ScreenWidth*g.ratio), float32(lcd.ScreenHeight*g.ratio)))
 	g.win.SetFixedSize(true)
 	g.win.ShowAndRun()
+}
+
+func calcScreenHash(screen [][]uint8) string {
+	h := sha256.New()
+	for i := range screen {
+		h.Write(screen[i])
+	}
+	return hex.EncodeToString(h.Sum(nil))
 }

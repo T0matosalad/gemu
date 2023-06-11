@@ -2,7 +2,11 @@ module github.com/d2verb/gemu
 
 go 1.20
 
-require fyne.io/fyne/v2 v2.3.5
+require (
+	fyne.io/fyne/v2 v2.3.5
+	google.golang.org/grpc v1.55.0
+	google.golang.org/protobuf v1.30.0
+)
 
 require (
 	fyne.io/systray v1.10.1-0.20230602210930-b6a2d6ca2a7b // indirect
@@ -32,8 +36,6 @@ require (
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
 	google.golang.org/genproto v0.0.0-20230306155012-7f2fa6fef1f4 // indirect
-	google.golang.org/grpc v1.55.0 // indirect
-	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	honnef.co/go/js/dom v0.0.0-20210725211120-f030747120f2 // indirect
 )

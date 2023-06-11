@@ -86,6 +86,14 @@ func newInstructionSet() map[uint16]instruction {
 			cpu.regs.SetHL(cpu.regs.HL() + 1)
 			return 8
 		}),
+		0x28: newInstruction("jr Z, r8", func(cpu *CPU) int {
+			data := cpu.operand8()
+			if cpu.regs.Flag(ZFlag) {
+				cpu.regs.PC += signExtU8ToU16(data)
+				return 12
+			}
+			return 8
+		}),
 		0x2a: newInstruction("ld A, (HL+)", func(cpu *CPU) int {
 			cpu.regs.A = cpu.bus.Read8(cpu.regs.HL())
 			cpu.regs.SetHL(cpu.regs.HL() + 1)
@@ -151,6 +159,10 @@ func newInstructionSet() map[uint16]instruction {
 			offset := cpu.operand8()
 			cpu.bus.Write8(0xff00+(uint16)(offset), cpu.regs.A)
 			return 12
+		}),
+		0xee: newInstruction("xor d8", func(cpu *CPU) int {
+			cpu.regs.A = cpu.xor8(cpu.regs.A, cpu.operand8())
+			return 8
 		}),
 		0xf0: newInstruction("ldh A, (a8)", func(cpu *CPU) int {
 			offset := cpu.operand8()
@@ -225,6 +237,17 @@ func (c *CPU) and8(a uint8, b uint8) uint8 {
 
 func (c *CPU) or8(a uint8, b uint8) uint8 {
 	result := a | b
+
+	c.regs.SetFlag(NFlag, false)
+	c.regs.SetFlag(ZFlag, result == 0)
+	c.regs.SetFlag(HFlag, false)
+	c.regs.SetFlag(CFlag, false)
+
+	return result
+}
+
+func (c *CPU) xor8(a uint8, b uint8) uint8 {
+	result := a ^ b
 
 	c.regs.SetFlag(NFlag, false)
 	c.regs.SetFlag(ZFlag, result == 0)

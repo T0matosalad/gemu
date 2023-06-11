@@ -111,6 +111,14 @@ func newInstructionSet() map[uint16]instruction {
 			}
 			return 8
 		}),
+		0x3c: newInstruction("inc A", func(cpu *CPU) int {
+			cpu.regs.A = cpu.add8(cpu.regs.A, 1, false)
+			return 4
+		}),
+		0x3d: newInstruction("dec A", func(cpu *CPU) int {
+			cpu.regs.A = cpu.sub8(cpu.regs.A, 1, false)
+			return 4
+		}),
 		0x3e: newInstruction("ld A, d8", func(cpu *CPU) int {
 			cpu.regs.A = cpu.operand8()
 			return 8
@@ -154,6 +162,9 @@ func newInstructionSet() map[uint16]instruction {
 			cpu.bus.Write16(cpu.regs.SP, cpu.regs.PC)
 			cpu.regs.PC = address
 			return 24
+		}),
+		0xd9: newInstruction("reti", func(cpu *CPU) int {
+			return cpu.retISR()
 		}),
 		0xe0: newInstruction("ldh (a8), A", func(cpu *CPU) int {
 			offset := cpu.operand8()

@@ -8,12 +8,12 @@ import (
 const Hz = 4194304
 
 const (
-	IntVBlank   = 1 << 0
-	IntLCD      = 1 << 1
-	IntTimer    = 1 << 2
-	IntSerial   = 1 << 3
-	IntJoypad   = 1 << 4
-	intSentinel = 5 // Just a sentinel, not actual interrupt flag
+	IntVBlank    = 1 << 0
+	IntLCD       = 1 << 1
+	IntTimer     = 1 << 2
+	IntSerial    = 1 << 3
+	IntJoypad    = 1 << 4
+	intrSentinel = 5 // Just a sentinel, not actual interrupt flag
 )
 
 type CPU struct {
@@ -47,6 +47,9 @@ func (c *CPU) ConnectToBus(b *bus.Bus) error {
 
 func (c *CPU) Step() int {
 	if c.halt {
+		if c.ie&c._if != 0 {
+			c.halt = false
+		}
 		return 4
 	}
 
@@ -113,7 +116,7 @@ func (c *CPU) Write16(address uint16, data uint16) {
 func (c *CPU) handleInterrupts() int {
 	filteredFlags := c.ie & c._if
 	accumulatedCycles := 0
-	for i := 0; i < intSentinel; i++ {
+	for i := 0; i < intrSentinel; i++ {
 		if filteredFlags&(1<<i) == 0 {
 			continue
 		}

@@ -1,15 +1,14 @@
-package gameboy
+package debug
 
 import (
 	"context"
 	"fmt"
 	"net"
 
+	"github.com/d2verb/gemu/pkg/debug/pb"
 	"github.com/d2verb/gemu/pkg/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-
-	pb "github.com/d2verb/gemu/pkg/gameboy/debug"
 )
 
 type DebugServer struct {
@@ -21,7 +20,7 @@ type DebugServer struct {
 	pb.UnimplementedDebuggerServer
 }
 
-func newDebugServer(port int, ch chan any, debugMode bool) *DebugServer {
+func NewDebugServer(port int, ch chan any, debugMode bool) *DebugServer {
 	return &DebugServer{
 		port:      port,
 		ch:        ch,
@@ -39,7 +38,7 @@ func (d *DebugServer) Next(cxt context.Context, req *pb.NextRequest) (*pb.NextRe
 	return &pb.NextReply{}, nil
 }
 
-func (d *DebugServer) start(ctx context.Context, cancel context.CancelFunc) {
+func (d *DebugServer) Start(ctx context.Context, cancel context.CancelFunc) {
 	if !d.debugMode {
 		return
 	}

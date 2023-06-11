@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/d2verb/gemu/pkg/debug/pb"
 	"github.com/d2verb/gemu/pkg/gameboy/apu"
 	"github.com/d2verb/gemu/pkg/gameboy/bus"
 	"github.com/d2verb/gemu/pkg/gameboy/cpu"
@@ -12,8 +13,6 @@ import (
 	"github.com/d2verb/gemu/pkg/gameboy/ram"
 	"github.com/d2verb/gemu/pkg/gameboy/rom"
 	"github.com/d2verb/gemu/pkg/log"
-
-	pb "github.com/d2verb/gemu/pkg/gameboy/debug"
 )
 
 type GameBoy struct {

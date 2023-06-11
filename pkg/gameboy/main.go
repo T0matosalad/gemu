@@ -3,6 +3,8 @@ package gameboy
 import (
 	"context"
 	"io/ioutil"
+
+	"github.com/d2verb/gemu/pkg/debug"
 )
 
 func Start(romPath string, ratio int, debugMode bool) error {
@@ -22,10 +24,10 @@ func Start(romPath string, ratio int, debugMode bool) error {
 	}
 
 	gui := newGUI("Gemu", emu.l, ratio)
-	dbg := newDebugServer(9000, ch, debugMode)
+	dbg := debug.NewDebugServer(9000, ch, debugMode)
 
 	go emu.start(ctx, cancel)
-	go dbg.start(ctx, cancel)
+	go dbg.Start(ctx, cancel)
 	gui.start(ctx, cancel)
 
 	return nil

@@ -4,7 +4,7 @@
 // - protoc             v3.6.1
 // source: debugger.proto
 
-package debug
+package pb
 
 import (
 	context "context"

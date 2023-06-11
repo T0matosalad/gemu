@@ -27,7 +27,7 @@ type GameBoy struct {
 	debugMode bool
 }
 
-func newGameBoy(romContent []uint8, ch chan any, debugMode bool) (*GameBoy, error) {
+func NewGameBoy(romContent []uint8, ch chan any, debugMode bool) (*GameBoy, error) {
 	l := lcd.New()
 
 	r, err := rom.New(romContent)
@@ -55,7 +55,11 @@ func newGameBoy(romContent []uint8, ch chan any, debugMode bool) (*GameBoy, erro
 	return &g, nil
 }
 
-func (g *GameBoy) start(ctx context.Context, cancel context.CancelFunc) {
+func (g *GameBoy) LCD() *lcd.LCD {
+	return g.l
+}
+
+func (g *GameBoy) Start(ctx context.Context, cancel context.CancelFunc) {
 	log.Debugf("Starting game... (%s)\n", g.r.String())
 
 	startTime := NowInMillisecond()

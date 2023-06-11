@@ -1,11 +1,15 @@
 package gemu
 
 import (
+	"context"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 
+	"github.com/d2verb/gemu/pkg/debug"
 	"github.com/d2verb/gemu/pkg/gameboy"
+	"github.com/d2verb/gemu/pkg/gui"
 	"github.com/d2verb/gemu/pkg/log"
 )
 
@@ -35,7 +39,33 @@ func Run() error {
 	}
 	log.SetMode(mode)
 
-	return gameboy.Start(flag.Arg(0), *r, *d)
+	return Start(flag.Arg(0), *r, *d)
+}
+
+func Start(romPath string, ratio int, debugMode bool) error {
+	romContent, err := ioutil.ReadFile(romPath)
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	ch := make(chan any)
+
+	gb, err := gameboy.NewGameBoy(romContent, ch, debugMode)
+	if err != nil {
+		return err
+	}
+
+	gui := gui.NewGUI("Gemu", gb.LCD(), ratio)
+	dbg := debug.NewDebugServer(9000, ch, debugMode)
+
+	go gb.Start(ctx, cancel)
+	go dbg.Start(ctx, cancel)
+	gui.Start(ctx, cancel)
+
+	return nil
 }
 
 func flagUsage() {

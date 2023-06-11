@@ -1,4 +1,4 @@
-package gameboy
+package gui
 
 import (
 	"context"
@@ -17,7 +17,7 @@ type GUI struct {
 	ratio int
 }
 
-func newGUI(winTitle string, l *lcd.LCD, ratio int) GUI {
+func NewGUI(winTitle string, l *lcd.LCD, ratio int) GUI {
 	a := app.New()
 	return GUI{
 		app:   a,
@@ -27,7 +27,7 @@ func newGUI(winTitle string, l *lcd.LCD, ratio int) GUI {
 	}
 }
 
-func (g *GUI) start(ctx context.Context, cancel context.CancelFunc) {
+func (g *GUI) Start(ctx context.Context, cancel context.CancelFunc) {
 	// Start a goroutine to update the screen content
 	go func() {
 		for {

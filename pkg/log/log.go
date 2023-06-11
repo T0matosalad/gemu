@@ -47,12 +47,12 @@ func StringToMode(s string) (Mode, error) {
 	return m, nil
 }
 
-func Fprintf(stream io.Writer, format string, args ...interface{}) {
+func Fprintf(stream io.Writer, format string, args ...any) {
 	format = fmt.Sprintf("[%s] %s", time.Now().Format("2006-01-02 15:04:05"), format)
 	fmt.Fprintf(stream, format, args...)
 }
 
-func Verbosef(format string, args ...interface{}) {
+func Verbosef(format string, args ...any) {
 	if mode > VerboseMode {
 		return
 	}
@@ -60,7 +60,7 @@ func Verbosef(format string, args ...interface{}) {
 	Fprintf(os.Stdout, format, args...)
 }
 
-func Debugf(format string, args ...interface{}) {
+func Debugf(format string, args ...any) {
 	if mode > DebugMode {
 		return
 	}
@@ -68,7 +68,7 @@ func Debugf(format string, args ...interface{}) {
 	Fprintf(os.Stdout, format, args...)
 }
 
-func Warnf(format string, args ...interface{}) {
+func Warnf(format string, args ...any) {
 	if mode > WarnMode {
 		return
 	}
@@ -76,7 +76,7 @@ func Warnf(format string, args ...interface{}) {
 	Fprintf(os.Stdout, format, args...)
 }
 
-func Errorf(format string, args ...interface{}) {
+func Errorf(format string, args ...any) {
 	if mode > ErrorMode {
 		return
 	}
@@ -84,7 +84,7 @@ func Errorf(format string, args ...interface{}) {
 	Fprintf(os.Stderr, format, args...)
 }
 
-func Fatalf(format string, args ...interface{}) {
+func Fatalf(format string, args ...any) {
 	if mode > FatalMode {
 		return
 	}

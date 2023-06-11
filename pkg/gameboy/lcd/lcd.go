@@ -9,12 +9,12 @@ const (
 
 type LCD struct {
 	sync.Mutex
-	Updated chan interface{}
+	Updated chan any
 	Screen  [ScreenHeight][ScreenWidth]uint8
 }
 
 func New() *LCD {
 	return &LCD{
-		Updated: make(chan interface{}),
+		Updated: make(chan any),
 	}
 }

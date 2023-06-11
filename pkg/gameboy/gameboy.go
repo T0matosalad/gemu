@@ -104,7 +104,7 @@ func (g *GameBoy) debuggerStep() (runNextEmulatorStep bool) {
 		runNextEmulatorStep = true
 	default:
 		log.Errorf("Unknown debug request: %T\n", req)
-		g.ch <- struct{}{}
+		g.ch <- nil
 		runNextEmulatorStep = false
 	}
 

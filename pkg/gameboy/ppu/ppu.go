@@ -7,9 +7,13 @@ import (
 	"github.com/d2verb/gemu/pkg/log"
 )
 
+// See: https://youtu.be/HyzD8pNlpwI?t=2723
 const (
-	CyclesPerScanLine = 456
-	VBlankLines       = 10
+	CyclesPerOAMSearch     = 80
+	CyclesPerPixelTransfer = 172
+	CyclesPerHBlank        = 204
+	CyclesPerScanLine      = CyclesPerOAMSearch + CyclesPerPixelTransfer + CyclesPerHBlank
+	VBlankLines            = 10
 )
 
 type PPU struct {
@@ -33,20 +37,18 @@ func New(l *lcd.LCD) *PPU {
 func (p *PPU) Step(cycles int) {
 	p.cycles += cycles
 
-	if p.cycles < CyclesPerScanLine && p.LY() < lcd.ScreenHeight {
-		if p.cycles < 80 {
-			// OAM Search
-		} else if p.cycles < 252 {
-			// Pixel Transfer
-			p.renderBackground()
-		} else {
-			// HBlank
-		}
-	}
-
 	if p.cycles >= CyclesPerScanLine {
 		p.SetLY((p.LY() + 1) % (lcd.ScreenHeight + VBlankLines))
 		p.cycles -= CyclesPerScanLine
+	}
+
+	if p.LY() < lcd.ScreenHeight {
+		if p.cycles < CyclesPerOAMSearch {
+			// OAM Search
+		} else if p.cycles < CyclesPerPixelTransfer {
+			// Pixel Transfer
+			p.renderBackground()
+		}
 	}
 
 	if p.LY() == lcd.ScreenHeight {
@@ -107,21 +109,22 @@ func (p *PPU) Write16(address uint16, data uint16) {
 
 func (p *PPU) renderBackground() {
 	var x uint8 = 0
+
+	p.l.Lock()
 	for ; x < lcd.ScreenWidth; x++ {
 		tileNumX := uint16((x + p.SCX()) / 8)
 		tileNumY := uint16((p.LY() + p.SCY()) / 8)
 		tileNum := p.BGMap(tileNumY*32 + tileNumX)
 
-		tileOffsetX := x % 8
-		tileOffsetY := p.LY() % 8
+		tileOffsetX := (x + p.SCX()) % 8
+		tileOffsetY := (p.LY() + p.SCY()) % 8
 
 		rawTileLine := p.BGTile(tileNum, tileOffsetY)
 		tileLine := p.buildTileLine(rawTileLine)
 
-		p.l.Lock()
 		p.l.Screen[p.LY()][x] = (255 - tileLine[tileOffsetX]*85)
-		p.l.Unlock()
 	}
+	p.l.Unlock()
 }
 
 func (p *PPU) buildTileLine(rawTileLine [2]uint8) [8]uint8 {

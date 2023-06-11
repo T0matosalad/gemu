@@ -1,9 +1,8 @@
 package ram
 
 import (
-	"log"
-
 	"github.com/d2verb/gemu/pkg/gameboy/bus"
+	"github.com/d2verb/gemu/pkg/log"
 )
 
 type RAM struct {

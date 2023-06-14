@@ -71,7 +71,7 @@ func newInstructionSet() map[uint16]instruction {
 		}),
 		0x20: newInstruction("jr nz, r8", func(cpu *CPU) int {
 			data := cpu.operand8()
-			if cpu.regs.Flag(ZFlag) {
+			if cpu.regs.Flag(ZFlag) != 0 {
 				return 8
 			}
 			cpu.regs.PC += signExtU8ToU16(data)
@@ -88,7 +88,7 @@ func newInstructionSet() map[uint16]instruction {
 		}),
 		0x28: newInstruction("jr Z, r8", func(cpu *CPU) int {
 			data := cpu.operand8()
-			if cpu.regs.Flag(ZFlag) {
+			if cpu.regs.Flag(ZFlag) != 0 {
 				cpu.regs.PC += signExtU8ToU16(data)
 				return 12
 			}
@@ -105,7 +105,7 @@ func newInstructionSet() map[uint16]instruction {
 		}),
 		0x38: newInstruction("jr C, r8", func(cpu *CPU) int {
 			data := cpu.operand8()
-			if cpu.regs.Flag(CFlag) {
+			if cpu.regs.Flag(CFlag) != 0 {
 				cpu.regs.PC += signExtU8ToU16(data)
 				return 12
 			}

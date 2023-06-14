@@ -38,10 +38,10 @@ func newRegisters() Registers {
 
 // Bit position of each flag in F register
 const (
-	ZFlag = 3
-	NFlag = 2
-	HFlag = 1
-	CFlag = 0
+	CFlag = 0b1
+	HFlag = 0b10
+	NFlag = 0b100
+	ZFlag = 0b1000
 )
 
 func (r *Registers) HL() uint16 {
@@ -71,14 +71,14 @@ func (r *Registers) SetDE(data uint16) {
 	r.E = (uint8)(data & 0xff)
 }
 
-func (r *Registers) Flag(bitPos int) bool {
-	return (r.F & (1 << bitPos)) != 0
+func (r *Registers) Flag(mask uint8) uint8 {
+	return r.F & mask
 }
 
-func (r *Registers) SetFlag(bitPos int, on bool) {
+func (r *Registers) SetFlag(mask uint8, on bool) {
 	if on {
-		r.F |= (1 << bitPos)
+		r.F |= mask
 	} else {
-		r.F &= ^(uint8)(1 << bitPos)
+		r.F &= ^mask
 	}
 }

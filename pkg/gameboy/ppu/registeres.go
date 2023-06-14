@@ -3,17 +3,18 @@ package ppu
 type Registers [12]uint8
 
 const (
-	BGDisplayBit = 0
-	OBJEnableBit = 1
-	OBJSizeBit   = 2
-	BGMapBit     = 3
-	BGTileBit    = 4
-	WinEnableBit = 5
-	WinMapBit    = 6
+	BGDisplayBit = 0b1
+	OBJEnableBit = 0b10
+	OBJSizeBit   = 0b100
+	BGMapBit     = 0b1000
+	BGTileBit    = 0b10000
+	WinEnableBit = 0b100000
+	WinMapBit    = 0b1000000
+	LCDEnableBit = 0b10000000
 )
 
-func (r *Registers) LCDC(bitPos int) bool {
-	return (r[0] & (1 << bitPos)) != 0
+func (r *Registers) LCDC(mask uint8) uint8 {
+	return r[0] & mask
 }
 
 func (r *Registers) SCY() uint8 {

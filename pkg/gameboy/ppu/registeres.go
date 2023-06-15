@@ -2,19 +2,45 @@ package ppu
 
 type Registers [12]uint8
 
+// LCDC bit flags
 const (
-	BGDisplayBit = 0b1
-	OBJEnableBit = 0b10
-	OBJSizeBit   = 0b100
-	BGMapBit     = 0b1000
-	BGTileBit    = 0b10000
-	WinEnableBit = 0b100000
-	WinMapBit    = 0b1000000
-	LCDEnableBit = 0b10000000
+	BGDisplayFlag = 0b1
+	OBJEnableFlag = 0b10
+	OBJSizeFlag   = 0b100
+	BGMapFlag     = 0b1000
+	BGTileFlag    = 0b10000
+	WinEnableFlag = 0b100000
+	WinMapFlag    = 0b1000000
+	LCDEnableFlag = 0b10000000
+)
+
+// LCD status bit flags
+const (
+	ModeFlag = 0b11
+)
+
+// LCD mode types
+const (
+	HBlankMode        = 0
+	VBlankMode        = 1
+	OAMSearchMode     = 2
+	PixelTransferMode = 3
 )
 
 func (r *Registers) LCDC(mask uint8) uint8 {
 	return r[0] & mask
+}
+
+func (r *Registers) STAT(mask uint8) uint8 {
+	return r[1] & mask
+}
+
+func (r *Registers) SetSTAT(mask uint8, on bool) {
+	if on {
+		r[1] |= mask
+	} else {
+		r[1] &= ^mask
+	}
 }
 
 func (r *Registers) SCY() uint8 {

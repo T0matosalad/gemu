@@ -45,13 +45,18 @@ func (p *PPU) Step(cycles int) {
 	if p.regs.LY() < lcd.ScreenHeight {
 		if p.cycles < CyclesPerOAMSearch {
 			// OAM Search
+			p.ChangeMode(OAMSearchMode)
 		} else if p.cycles < CyclesPerPixelTransfer {
 			// Pixel Transfer
-			p.renderBackground()
+			p.ChangeMode(PixelTransferMode)
+		} else if p.cycles < CyclesPerHBlank {
+			// HBlank
+			p.ChangeMode(HBlankMode)
 		}
 	}
 
 	if p.regs.LY() == lcd.ScreenHeight {
+		p.ChangeMode(VBlankMode)
 		p.bus.SetIF(cpu.IntVBlank)
 		p.l.Updated <- nil
 	}
@@ -150,7 +155,7 @@ func (p *PPU) BGColor(paletteID uint8) uint8 {
 
 func (p *PPU) BGTile(tileID uint8, offsetY uint8) [2]uint8 {
 	var baseAddress uint16 = 0x8800
-	if p.regs.LCDC(BGTileBit) != 0 {
+	if p.regs.LCDC(BGTileFlag) != 0 {
 		baseAddress = 0x8000
 	}
 	baseAddress += uint16(tileID) * 16
@@ -163,8 +168,25 @@ func (p *PPU) BGTile(tileID uint8, offsetY uint8) [2]uint8 {
 
 func (p *PPU) BGMap(offset uint16) uint8 {
 	var baseAddress uint16 = 0x9800
-	if p.regs.LCDC(BGMapBit) != 0 {
+	if p.regs.LCDC(BGMapFlag) != 0 {
 		baseAddress = 0x9c00
 	}
 	return p.bus.Read8(baseAddress + offset)
+}
+
+func (p *PPU) ChangeMode(nextMode uint8) {
+	currentMode := p.regs.STAT(ModeFlag)
+	if currentMode == nextMode {
+		return
+	}
+
+	p.regs.SetSTAT(currentMode, false)
+	p.regs.SetSTAT(nextMode, true)
+
+	switch nextMode {
+	case PixelTransferMode:
+		p.renderBackground()
+	case OAMSearchMode:
+	default:
+	}
 }

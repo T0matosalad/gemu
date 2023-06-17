@@ -61,6 +61,10 @@ func newInstructionSet() map[uint16]instruction {
 			cpu.regs.SetDE(cpu.regs.DE() + 1)
 			return 8
 		}),
+		0x14: newInstruction("inc D", func(cpu *CPU) int {
+			cpu.regs.D = cpu.add8(cpu.regs.D, 1, false)
+			return 1
+		}),
 		0x18: newInstruction("jr r8", func(cpu *CPU) int {
 			cpu.regs.PC += signExtU8ToU16(cpu.operand8())
 			return 12
@@ -99,6 +103,14 @@ func newInstructionSet() map[uint16]instruction {
 			cpu.regs.SetHL(cpu.regs.HL() + 1)
 			return 8
 		}),
+		0x30: newInstruction("jr NC, r8", func(cpu *CPU) int {
+			data := cpu.operand8()
+			if cpu.regs.Flag(CFlag) == 0 {
+				cpu.regs.PC += signExtU8ToU16(data)
+				return 12
+			}
+			return 8
+		}),
 		0x31: newInstruction("ld SP, d16", func(cpu *CPU) int {
 			cpu.regs.SP = cpu.operand16()
 			return 12
@@ -123,12 +135,20 @@ func newInstructionSet() map[uint16]instruction {
 			cpu.regs.A = cpu.operand8()
 			return 8
 		}),
+		0x5f: newInstruction("ld E, A", func(cpu *CPU) int {
+			cpu.regs.E = cpu.regs.A
+			return 8
+		}),
 		0x76: newInstruction("halt", func(cpu *CPU) int {
 			cpu.halt = true
 			return 4
 		}),
 		0x78: newInstruction("ld A, B", func(cpu *CPU) int {
 			cpu.regs.A = cpu.regs.B
+			return 4
+		}),
+		0x7b: newInstruction("ld A, E", func(cpu *CPU) int {
+			cpu.regs.A = cpu.regs.E
 			return 4
 		}),
 		0xaf: newInstruction("xor A", func(cpu *CPU) int {
@@ -150,6 +170,10 @@ func newInstructionSet() map[uint16]instruction {
 		0xc3: newInstruction("jp a16", func(cpu *CPU) int {
 			cpu.regs.PC = cpu.operand16()
 			return 16
+		}),
+		0xc6: newInstruction("add A, d8", func(cpu *CPU) int {
+			cpu.regs.A = cpu.add8(cpu.regs.A, cpu.operand8(), true)
+			return 8
 		}),
 		0xc9: newInstruction("ret", func(cpu *CPU) int {
 			cpu.regs.PC = cpu.bus.Read16(cpu.regs.SP)

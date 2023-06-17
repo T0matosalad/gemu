@@ -38,8 +38,12 @@ func (p *PPU) Step(cycles int) {
 	p.cycles += cycles
 
 	if p.cycles >= CyclesPerScanLine {
-		p.regs.SetLY((p.regs.LY() + 1) % (lcd.ScreenHeight + VBlankLines))
 		p.cycles -= CyclesPerScanLine
+		p.regs.SetLY((p.regs.LY() + 1) % (lcd.ScreenHeight + VBlankLines))
+
+		if p.regs.LY() >= lcd.ScreenHeight {
+			p.ChangeMode(VBlankMode)
+		}
 	}
 
 	if p.regs.LY() < lcd.ScreenHeight {
@@ -53,12 +57,6 @@ func (p *PPU) Step(cycles int) {
 			// HBlank
 			p.ChangeMode(HBlankMode)
 		}
-	}
-
-	if p.regs.LY() == lcd.ScreenHeight {
-		p.ChangeMode(VBlankMode)
-		p.bus.SetIF(cpu.IntVBlank)
-		p.l.Updated <- nil
 	}
 }
 
@@ -184,9 +182,13 @@ func (p *PPU) ChangeMode(nextMode uint8) {
 	p.regs.SetSTAT(nextMode, true)
 
 	switch nextMode {
-	case PixelTransferMode:
-		p.renderBackground()
 	case OAMSearchMode:
+	case PixelTransferMode:
+	case HBlankMode:
+		p.renderBackground()
+	case VBlankMode:
+		p.bus.SetIF(cpu.IntVBlank)
+		p.l.Updated <- nil
 	default:
 	}
 }

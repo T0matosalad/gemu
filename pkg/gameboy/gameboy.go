@@ -2,7 +2,6 @@ package gameboy
 
 import (
 	"context"
-	"time"
 
 	"github.com/d2verb/gemu/pkg/debug/pb"
 	"github.com/d2verb/gemu/pkg/gameboy/apu"
@@ -62,9 +61,6 @@ func (g *GameBoy) LCD() *lcd.LCD {
 func (g *GameBoy) Start(ctx context.Context, cancel context.CancelFunc) {
 	log.Debugf("Starting game... (%s)\n", g.r.String())
 
-	startTime := NowInMillisecond()
-	accumulatedCycles := 0
-
 	for {
 		select {
 		case <-ctx.Done():
@@ -79,18 +75,6 @@ func (g *GameBoy) Start(ctx context.Context, cancel context.CancelFunc) {
 
 			cycles := g.c.Step()
 			g.p.Step(cycles)
-
-			// Ensure that the CPU only runs cpu.Hz cycles per second
-			accumulatedCycles += cycles
-			if accumulatedCycles >= cpu.Hz {
-				elapsedTime := NowInMillisecond() - startTime
-				if elapsedTime < 1000 {
-					duration := time.Duration(1000 - elapsedTime)
-					time.Sleep(duration * time.Millisecond)
-				}
-				accumulatedCycles -= cpu.Hz
-				startTime = NowInMillisecond()
-			}
 		}
 	}
 }
@@ -109,8 +93,4 @@ func (g *GameBoy) debuggerStep() (runNextEmulatorStep bool) {
 	}
 
 	return
-}
-
-func NowInMillisecond() int64 {
-	return time.Now().Unix()*1000 + time.Now().UnixNano()/int64(time.Millisecond)
 }

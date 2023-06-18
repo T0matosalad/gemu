@@ -76,9 +76,15 @@ func (c *CPU) Step() int {
 }
 
 func (c *CPU) fetch() uint16 {
-	opcode := c.bus.Read8(c.regs.PC)
+	var opcode uint16 = uint16(c.bus.Read8(c.regs.PC))
 	c.regs.PC++
-	return (uint16)(opcode)
+
+	if opcode == 0xcb {
+		opcode = (opcode << 8) | uint16(c.bus.Read8(c.regs.PC))
+		c.regs.PC++
+	}
+
+	return opcode
 }
 
 func (c *CPU) Read8(address uint16) uint8 {

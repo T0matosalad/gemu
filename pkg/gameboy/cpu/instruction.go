@@ -216,6 +216,12 @@ func newInstructionSet() map[uint16]instruction {
 			cpu.ime = true
 			return 4
 		}),
+
+		// Prefixed (0xcb 0x??)
+		0xcb7e: newInstruction("bit 7, (HL)", func(cpu *CPU) int {
+			cpu.bit8(cpu.bus.Read8(cpu.regs.HL()), 7)
+			return 8
+		}),
 	}
 }
 
@@ -290,6 +296,14 @@ func (c *CPU) xor8(a uint8, b uint8) uint8 {
 	c.regs.SetFlag(CFlag, false)
 
 	return result
+}
+
+func (c *CPU) bit8(a uint8, b int) {
+	result := (a & (1 << b)) >> b
+
+	c.regs.SetFlag(NFlag, false)
+	c.regs.SetFlag(ZFlag, result == 0)
+	c.regs.SetFlag(HFlag, true)
 }
 
 // Example: 0b1111_1010 to 0b1111_1111_1111_1010

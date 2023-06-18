@@ -117,12 +117,12 @@ func (p *PPU) renderBackground() {
 	for ; x < lcd.ScreenWidth; x++ {
 		tileNumX := uint16((x + p.regs.SCX()) / 8)
 		tileNumY := uint16((p.regs.LY() + p.regs.SCY()) / 8)
-		tileNum := p.BGMap(tileNumY*32 + tileNumX)
+		tileNum := p.BGTileMap(tileNumY*32 + tileNumX)
 
 		tileOffsetX := (x + p.regs.SCX()) % 8
 		tileOffsetY := (p.regs.LY() + p.regs.SCY()) % 8
 
-		rawTileLine := p.BGTile(tileNum, tileOffsetY)
+		rawTileLine := p.BGTileData(tileNum, tileOffsetY)
 		tileLine := p.buildTileLine(rawTileLine)
 
 		p.l.Screen[p.regs.LY()][x] = (255 - tileLine[tileOffsetX]*85)
@@ -151,9 +151,9 @@ func (p *PPU) BGColor(paletteID uint8) uint8 {
 	return ((p.regs.BGP() & mask) >> (paletteID * 2)) & 0b11
 }
 
-func (p *PPU) BGTile(tileID uint8, offsetY uint8) [2]uint8 {
+func (p *PPU) BGTileData(tileID uint8, offsetY uint8) [2]uint8 {
 	var baseAddress uint16 = 0x8800
-	if p.regs.LCDC(BGTileFlag) != 0 {
+	if p.regs.LCDC(BGTileDataFlag) != 0 {
 		baseAddress = 0x8000
 	}
 	baseAddress += uint16(tileID) * 16
@@ -164,9 +164,9 @@ func (p *PPU) BGTile(tileID uint8, offsetY uint8) [2]uint8 {
 	}
 }
 
-func (p *PPU) BGMap(offset uint16) uint8 {
+func (p *PPU) BGTileMap(offset uint16) uint8 {
 	var baseAddress uint16 = 0x9800
-	if p.regs.LCDC(BGMapFlag) != 0 {
+	if p.regs.LCDC(BGTileMapFlag) != 0 {
 		baseAddress = 0x9c00
 	}
 	return p.bus.Read8(baseAddress + offset)

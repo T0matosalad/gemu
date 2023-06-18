@@ -240,12 +240,47 @@ func newInstructionSet() map[uint16]instruction {
 		// Prefixed (0xcb 0x??)
 		0xcb7e: newInstruction("bit 7, (HL)", func(cpu *CPU) int {
 			cpu.bit8(cpu.bus.Read8(cpu.regs.HL()), 7)
-			return 8
+			return 12
+		}),
+		0xcbc6: newInstruction("set 0, (HL)", func(cpu *CPU) int {
+			value := cpu.bus.Read8(cpu.regs.HL())
+			cpu.bus.Write8(cpu.regs.HL(), value|1)
+			return 16
+		}),
+		0xcbce: newInstruction("set 1, (HL)", func(cpu *CPU) int {
+			value := cpu.bus.Read8(cpu.regs.HL())
+			cpu.bus.Write8(cpu.regs.HL(), value|(1<<1))
+			return 16
+		}),
+		0xcbd6: newInstruction("set 2, (HL)", func(cpu *CPU) int {
+			value := cpu.bus.Read8(cpu.regs.HL())
+			cpu.bus.Write8(cpu.regs.HL(), value|(1<<2))
+			return 16
+		}),
+		0xcbde: newInstruction("set 3, (HL)", func(cpu *CPU) int {
+			value := cpu.bus.Read8(cpu.regs.HL())
+			cpu.bus.Write8(cpu.regs.HL(), value|(1<<3))
+			return 16
+		}),
+		0xcbe6: newInstruction("set 4, (HL)", func(cpu *CPU) int {
+			value := cpu.bus.Read8(cpu.regs.HL())
+			cpu.bus.Write8(cpu.regs.HL(), value|(1<<4))
+			return 16
+		}),
+		0xcbee: newInstruction("set 5, (HL)", func(cpu *CPU) int {
+			value := cpu.bus.Read8(cpu.regs.HL())
+			cpu.bus.Write8(cpu.regs.HL(), value|(1<<5))
+			return 16
 		}),
 		0xcbf6: newInstruction("set 6, (HL)", func(cpu *CPU) int {
 			value := cpu.bus.Read8(cpu.regs.HL())
 			cpu.bus.Write8(cpu.regs.HL(), value|(1<<6))
-			return 8
+			return 16
+		}),
+		0xcbfe: newInstruction("set 7, (HL)", func(cpu *CPU) int {
+			value := cpu.bus.Read8(cpu.regs.HL())
+			cpu.bus.Write8(cpu.regs.HL(), value|(1<<7))
+			return 16
 		}),
 	}
 }

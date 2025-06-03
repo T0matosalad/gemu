@@ -10,3 +10,6 @@ clean:
 .PHONY: test
 test:
 	go test -v ./...
+.PHONY: test-cpu
+test-cpu:
+	go test -v ./pkg/gameboy/cpu
